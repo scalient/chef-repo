@@ -3,3 +3,8 @@
 # Copyright 2012 Scalient LLC
 
 site "http://community.opscode.com/api/v1"
+
+cookbook "apt"
+cookbook "route53"
+cookbook "scalient",
+  :path => "vendor/cookbooks/scalient"

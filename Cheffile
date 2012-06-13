@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright 2012 Scalient LLC
+
+site "http://community.opscode.com/api/v1"

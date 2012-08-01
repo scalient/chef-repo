@@ -12,3 +12,4 @@ long_description Pathname.new("../README.md").expand_path(__FILE__).open { |f| f
 version "0.9.0"
 
 depends "cap_ops"
+depends "route53"

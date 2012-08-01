@@ -5,6 +5,9 @@
 site "http://community.opscode.com/api/v1"
 
 cookbook "apt"
+cookbook "cap_ops",
+  :git => "git://github.com/scalient/cap-ops.git",
+  :ref => "chef-cookbook"
 cookbook "route53"
 cookbook "scalient",
   :path => "vendor/cookbooks/scalient"

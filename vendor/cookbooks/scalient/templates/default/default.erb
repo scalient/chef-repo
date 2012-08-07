@@ -1,0 +1,21 @@
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+
+passenger_root "/usr/lib/phusion-passenger";
+passenger_ruby <%= @passenger_ruby.dump %>;
+passenger_max_pool_size 8;
+
+server {
+    server_name <%= node.name.dump %>;
+    listen 80;
+    root <%= @app_root.dump %>;
+    passenger_enabled on;
+    passenger_use_global_queue on;
+}

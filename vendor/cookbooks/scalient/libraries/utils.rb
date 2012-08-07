@@ -3,6 +3,8 @@
 # Copyright 2012 Scalient LLC
 
 require "etc"
+require "pathname"
+require "rbconfig"
 
 module Scalient
   module Utils
@@ -17,6 +19,11 @@ module Scalient
         original_gid = Process.gid
         original_gid = ENV["SUDO_GID"].to_i if original_gid == 0 && ENV.include?("SUDO_GID")
         Etc.getgrgid(original_gid).name
+      end
+
+      def ruby_interpreter_path
+        Pathname.new(RbConfig::CONFIG["RUBY_INSTALL_NAME"] + RbConfig::CONFIG["EXEEXT"]) \
+          .expand_path(RbConfig::CONFIG["bindir"]).to_s
       end
     end
 

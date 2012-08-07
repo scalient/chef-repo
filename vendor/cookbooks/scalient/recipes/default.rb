@@ -45,3 +45,11 @@ exec -- hostname -F /etc/hostname
 EOF
   action :nothing
 end
+
+cookbook_file "/etc/ssh/ssh_known_hosts" do
+  source "ssh_known_hosts"
+  owner "root"
+  group "root"
+  mode 0644
+  action :nothing
+end.action(:create)

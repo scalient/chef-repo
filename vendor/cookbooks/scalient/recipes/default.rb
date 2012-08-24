@@ -53,3 +53,16 @@ cookbook_file "/etc/ssh/ssh_known_hosts" do
   mode 0644
   action :nothing
 end.action(:create)
+
+ruby_block "set-ec2-instance-name" do
+  block do
+    require "fog"
+
+    compute = Fog::Compute.new({:provider => "aws",
+                                :aws_access_key_id => data_bag_item("keys", "aws")["access_key"],
+                                :aws_secret_access_key => data_bag_item("keys", "aws")["secret_key"]})
+    compute.create_tags([node["ec2"]["instance_id"]], "Name" => node.name)
+  end
+
+  action :nothing
+end.action(:create)

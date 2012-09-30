@@ -1,0 +1,34 @@
+# chef-solo - Chef Solo
+#
+# Chef Solo enables execution of recipes in the absence of a Chef server
+#
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+#
+
+description "Chef Solo"
+
+start on filesystem
+stop on runlevel [!2345]
+
+chdir /home/chef/client
+env RBENV_VERSION=<%= @rbenv_version.shellescape %>
+
+pre-start script
+    test -x "`rbenv exec bundle show chef`/bin/chef-solo" || { stop; exit 0; }
+end script
+
+script
+    prefix=<%= @prefix.shellescape %>
+
+    exec rbenv exec bundle exec chef-solo \
+        -c "${prefix}/etc/chef-solo/solo.rb" \
+        -L "${prefix}/var/log/chef-solo/solo.log"
+end script

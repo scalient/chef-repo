@@ -1,0 +1,16 @@
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+
+node_name       <%= node.name.dump %>
+file_cache_path <%= @prefix.dump %> "/var/chef-solo/cache"
+cookbook_path   <%= @prefix.dump %> "/var/chef-client/cache/cookbooks"
+json_attribs    <%= @prefix.dump %> "/etc/chef-solo/node.json"
+role_path       <%= @prefix.dump %> "/var/chef-solo/roles"
+data_bag_path   <%= @prefix.dump %> "/var/chef-solo/data_bags"

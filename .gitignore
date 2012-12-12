@@ -3,6 +3,8 @@
 /.bundle/
 /.idea/
 /.rake_test_cache/
+/.yardoc/
 /cookbooks/
+/doc/
 /tmp/
 /vendor/bundle/

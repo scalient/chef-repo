@@ -11,6 +11,14 @@ require "pathname"
 recipe = self
 user_home = Dir.home(recipe.original_user)
 
+# Attempts to match hostnames of the form `$!{role}.$!{domain}.*` to user work directories of the form
+# `$!{work_dir}/$!{role}-$!{domain}`. Takes action on the matched directories.
+#
+# @param [Hash] hostname_hash the `Hash` from hostnames to information on them.
+# @param [Pathname] work_dir the user work directory.
+# @yield [hostname_info, config_dir] Performs the given action on a matched directory.
+# @yieldparam [Object] hostname_info the hostname information.
+# @yieldparam [Pathname] config_dir the configuration directory.
 def generate_config_templates(hostname_hash, work_dir)
   hostname_hash.each_pair do |hostname, hostname_info|
     next if hostname == "id"

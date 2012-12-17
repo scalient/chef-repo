@@ -34,6 +34,18 @@ package "libsqlite3-dev" do
   action :nothing
 end.action(:install)
 
+package "nodejs" do
+  action :nothing
+  notifies :create, "link[/usr/bin/node]", :immediately
+end.action(:install)
+
+link "/usr/bin/node" do
+  to "nodejs"
+  owner "root"
+  group "root"
+  action :nothing
+end
+
 gem_package "passenger" do
   gem_binary "gem"
   action :nothing

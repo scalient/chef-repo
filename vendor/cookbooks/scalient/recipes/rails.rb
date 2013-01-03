@@ -14,7 +14,7 @@ app_dir = Pathname.new("apps").join(node.name.split(".", -1)[1]).expand_path(use
 
 apt_repository "passenger-nginx" do
   uri "http://ppa.launchpad.net/brightbox/passenger-nginx/ubuntu"
-  distribution node["lsb"]["codename"]
+  distribution "precise"
   components ["main"]
   keyserver "keyserver.ubuntu.com"
   key "C3173AA6"

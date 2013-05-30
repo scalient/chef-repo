@@ -12,17 +12,7 @@ recipe = self
 user_home = Dir.home(recipe.original_user)
 app_dir = Pathname.new("apps").join(node.name.split(".", -1)[1]).expand_path(user_home)
 
-apt_repository "passenger-nginx" do
-  uri "http://ppa.launchpad.net/brightbox/passenger-nginx/ubuntu"
-  distribution "precise"
-  components ["main"]
-  keyserver "keyserver.ubuntu.com"
-  key "C3173AA6"
-  cache_rebuild true
-  action :nothing
-end.action(:add)
-
-package "nginx-full" do
+package "nginx" do
   action :nothing
 end.action(:install)
 
@@ -46,50 +36,36 @@ link "/usr/bin/node" do
   action :nothing
 end
 
-gem_package "passenger" do
-  gem_binary "gem"
-  action :nothing
-end.action(:install)
-
-# UGLY HACK: We need to install two versions each of rack and rake to induce lazy activation by RubyGems. Otherwise,
-# version conflicts with Bundler's Gemfile.lock may result.
-
-gem_package "rack" do
-  gem_binary "gem"
-  action :nothing
-end.action(:install)
-
-gem_package "rack-redundant" do
-  package_name "rack"
-  gem_binary "gem"
-  version "1.4.4"
-  action :nothing
-end.action(:install)
-
-gem_package "rake" do
-  gem_binary "gem"
-  action :nothing
-end.action(:install)
-
-gem_package "rake-redundant" do
-  package_name "rake"
-  gem_binary "gem"
-  version "10.0.2"
-  action :nothing
-end.action(:install)
-
 template "/etc/nginx/sites-available/default" do
   source "default.erb"
   owner "root"
   group "root"
   mode 0644
-  variables(:app_root => app_dir.join("current", "public").to_s,
-            :passenger_ruby => recipe.ruby_interpreter_path)
+  variables(:app_root => app_dir.join("current", "public").to_s)
   notifies :restart, "service[nginx]", :immediately
   action :nothing
 end.action(:create)
 
 service "nginx" do
+  action :nothing
+end
+
+template "/etc/init/unicorn.conf" do
+  source "unicorn.conf.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  variables(:rbenv_version => Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
+            :app_root => app_dir.join("current", "public").to_s,
+            :original_user => recipe.original_user)
+  notifies :create, "link[/etc/init.d/unicorn]", :immediately
+  action :nothing
+end.action(:create)
+
+link "/etc/init.d/unicorn" do
+  to "/lib/init/upstart-job"
+  owner "root"
+  group "root"
   action :nothing
 end
 

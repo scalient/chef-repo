@@ -8,14 +8,48 @@
 #                 ||----w |
 #                 ||     ||
 
-passenger_root "/usr/lib/phusion-passenger";
-passenger_ruby <%= @passenger_ruby.dump %>;
-passenger_max_pool_size 8;
+upstream unicorn_app_server {
+    # Connect to the Unicorn application server port.
+    server localhost:8080 fail_timeout=0;
+}
 
 server {
     server_name <%= node.name.dump %>;
-    listen 80;
+    listen 80 default deferred;
     root <%= @app_root.dump %>;
-    passenger_enabled on;
-    passenger_use_global_queue on;
+
+    # Reject unreasonably large request bodies.
+    client_max_body_size 4G;
+
+    # 2 seconds is enough for the site's assets to be retrieved, so we can set the timeout to 5.
+    keepalive_timeout 5;
+
+    # Prefer to serve static files directly.
+    try_files $uri @app;
+
+    location @app {
+        # An HTTP header important enough to have its own Wikipedia entry: http://en.wikipedia.org/wiki/X-Forwarded-For.
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # Enable this if you forward HTTPS traffic to unicorn. This helps Rack set the proper URL scheme for doing
+        # redirects.
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Pass the Host header from the client right along so that redirects can be set properly within the Rack
+        # application.
+        proxy_set_header Host $http_host;
+
+        # We don't want Nginx trying to do something clever with redirects, so we already set the Host header above.
+        proxy_redirect off;
+
+        # The application server.
+        proxy_pass http://unicorn_app_server;
+    }
+
+    # Render Rails error pages on 500's.
+    error_page 500 502 503 504 /500.html;
+
+    location = /500.html {
+        root <%= @app_root.dump %>;
+    }
 }

@@ -62,7 +62,7 @@ if !values.empty?
   end
 
   hostnames = (data_bag_item("monitoring", "airbrake").keys + data_bag_item("analytics", "google").keys).uniq
-  hostname_hash = Hash[hostnames.zip([data_bag_item("keys", "aws")] * hostnames.size)]
+  hostname_hash = Hash[hostnames.zip([data_bag_item("keys", "aws")[workstation_info["organization"]]] * hostnames.size)]
 
   generate_config_templates(hostname_hash, work_dir) do |hostname_info, config_dir|
     template Pathname.new("aws.yml").expand_path(config_dir).to_s do

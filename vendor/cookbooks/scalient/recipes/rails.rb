@@ -11,6 +11,7 @@ require "pathname"
 recipe = self
 user_home = Dir.home(recipe.original_user)
 app_dir = Pathname.new("apps").join(node.name.split(".", -1)[1]).expand_path(user_home)
+org_name = node.name.split(".", -1)[1]
 
 package "nginx" do
   action :nothing
@@ -99,8 +100,8 @@ template app_dir.join("shared", "config", "aws.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:access_key => data_bag_item("keys", "aws")["access_key"],
-            :secret_key => data_bag_item("keys", "aws")["secret_key"])
+  variables(:access_key => data_bag_item("keys", "aws")[org_name]["access_key"],
+            :secret_key => data_bag_item("keys", "aws")[org_name]["secret_key"])
   action :nothing
 end.action(:create)
 

@@ -13,6 +13,7 @@ recipe = self
 prefix_dir = Pathname.new("/usr/local")
 gemfile = Pathname.new("client/Gemfile.d/Gemfile-scalient").expand_path(Dir.home("chef"))
 has_rabbitmq_server = Pathname.new("/usr/sbin/rabbitmqctl").executable?
+org_name = node.name.split(".", -1)[1]
 
 cap_ops_gemfile_fragment gemfile.to_s do
   source gemfile.basename.to_s
@@ -66,8 +67,8 @@ ruby_block "set-ec2-instance-name" do
     require "fog"
 
     compute = Fog::Compute.new({:provider => "aws",
-                                :aws_access_key_id => data_bag_item("keys", "aws")["access_key"],
-                                :aws_secret_access_key => data_bag_item("keys", "aws")["secret_key"]})
+                                :aws_access_key_id => data_bag_item("keys", "aws")[org_name]["access_key"],
+                                :aws_secret_access_key => data_bag_item("keys", "aws")[org_name]["secret_key"]})
     compute.create_tags([node["ec2"]["instance_id"]], "Name" => node.name)
   end
 

@@ -13,4 +13,5 @@ version "0.9.0"
 
 depends "apt"
 depends "cap_ops"
+depends "erlang", "= 1.3.0"
 depends "route53"

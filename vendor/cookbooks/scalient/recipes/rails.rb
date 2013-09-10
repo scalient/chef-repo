@@ -11,7 +11,16 @@ require "pathname"
 recipe = self
 user_home = Dir.home(recipe.original_user)
 app_dir = Pathname.new("apps").join(node.name.split(".", -1)[1]).expand_path(user_home)
-org_name = node.name.split(".", -1)[1]
+hostname = node.name
+
+match_group = HashMatchGroup.new do
+  subgroup OrganizationMatchGroup.new("organizations")
+  subgroup HostnameMatchGroup.new("hostnames")
+end
+
+key_info = match_group.match(hostname, data_bag_item("keys", "aws"))
+access_key = key_info["access_key"]
+secret_key = key_info["secret_key"]
 
 package "nginx" do
   action :nothing
@@ -91,7 +100,7 @@ template app_dir.join("shared", "config", "airbrake.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:api_key => data_bag_item("monitoring", "airbrake")[node.name])
+  variables(:api_key => match_group.match(hostname, data_bag_item("monitoring", "airbrake")))
   action :nothing
 end.action(:create)
 
@@ -100,8 +109,8 @@ template app_dir.join("shared", "config", "aws.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:access_key => data_bag_item("keys", "aws")[org_name]["access_key"],
-            :secret_key => data_bag_item("keys", "aws")[org_name]["secret_key"])
+  variables(:access_key => access_key,
+            :secret_key => secret_key)
   action :nothing
 end.action(:create)
 
@@ -110,6 +119,6 @@ template app_dir.join("shared", "config", "google_analytics.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:id => data_bag_item("analytics", "google")[node.name])
+  variables(:id => match_group.match(hostname, data_bag_item("analytics", "google")))
   action :nothing
 end.action(:create)

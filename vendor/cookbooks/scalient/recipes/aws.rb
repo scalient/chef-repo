@@ -2,12 +2,24 @@
 #
 # Copyright 2012 Scalient LLC
 
+class << self
+  include Scalient::Utils
+end
+
 recipe = self
-hostname = node.name.split(".", -1)[0]
-main_org_name = node.name.split(".", -1)[1]
-alternate_org_names = data_bag_item("dns", "aws")[main_org_name]["alternates"] || []
-access_key = data_bag_item("keys", "aws")[main_org_name]["access_key"]
-secret_key = data_bag_item("keys", "aws")[main_org_name]["secret_key"]
+hostname = node.name
+domain_name = node.name.split(".", -1)[1..2].join(".")
+
+match_group = HashMatchGroup.new do
+  subgroup OrganizationMatchGroup.new("organizations")
+  subgroup HostnameMatchGroup.new("hostnames")
+end
+
+alternate_domain_names = data_bag_item("dns", "aws")[domain_name]["alternates"] || []
+
+key_info = match_group.match(hostname, data_bag_item("keys", "aws"))
+access_key = key_info["access_key"]
+secret_key = key_info["secret_key"]
 
 ruby_block "register-cnames" do
   block do
@@ -17,10 +29,10 @@ ruby_block "register-cnames" do
                           :aws_access_key_id => access_key,
                           :aws_secret_access_key => secret_key}).zones
 
-    ([main_org_name] + alternate_org_names).each do |org_name|
-      zone_id = data_bag_item("dns", "aws")[org_name]["route53_zone_id"]
+    ([domain_name] + alternate_domain_names).each do |domain_name|
+      zone_id = data_bag_item("dns", "aws")[domain_name]["route53_zone_id"]
       domain = zones.get(zone_id).domain.gsub(Regexp.new("\\.$"), "")
-      domain_name = hostname + "." + domain
+      domain_name = hostname.split(".", -1)[0] + "." + domain_name
 
       recipe.route53_record "register-cname-#{domain_name}" do
         name domain_name
@@ -35,7 +47,7 @@ ruby_block "register-cnames" do
         action :nothing
       end.action(:create)
 
-      if hostname == "www"
+      if hostname.split(".", -1)[0] == "www"
         # Enable the wwwizer.com "naked domain" redirect service.
         recipe.route53_record "register-a-wwwizer-#{domain_name}" do
           name domain

@@ -30,5 +30,58 @@ module Scalient
     def self.included(clazz)
       clazz.send(:include, InstanceMethods)
     end
+
+    class HashMatchGroup
+      attr_reader :name
+      attr_reader :subgroups
+
+      def initialize(name = nil, &block)
+        @name = name
+        @subgroups = []
+
+        instance_eval(&block) if !block.nil?
+      end
+
+      # Resolves subgroups in reverse order of declaration, from most specific to least specific.
+      def match(name, hash)
+        if subgroups.empty?
+          hash.each_pair do |k, v|
+            return v if match_key?(name, k)
+          end
+        else
+          @subgroups.each do |subgroup|
+            subhash = hash[subgroup.name]
+            next if subhash.nil?
+
+            m = subgroup.match(name, subhash)
+            return m if !m.nil?
+          end
+        end
+
+        nil
+      end
+
+      def subgroup(match_group)
+        @subgroups.unshift(match_group)
+      end
+
+      def match_key?(name, key)
+        false
+      end
+    end
+
+    class OrganizationMatchGroup < HashMatchGroup
+      # Treats the name as a hostname and parses out the middle portion as the organization.
+      def match_key?(name, key)
+        name.split(".", -1)[1] == key
+      end
+    end
+
+    class HostnameMatchGroup < HashMatchGroup
+      # Treats the name as a hostname.
+      def match_key?(name, key)
+        name == key
+      end
+    end
   end
 end

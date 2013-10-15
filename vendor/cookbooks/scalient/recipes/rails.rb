@@ -66,7 +66,7 @@ template "/etc/init/unicorn.conf" do
   group "root"
   mode 0644
   variables(:rbenv_version => Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
-            :app_root => app_dir.join("current", "public").to_s,
+            :app_root => app_dir.join("current").to_s,
             :original_user => recipe.original_user)
   notifies :create, "link[/etc/init.d/unicorn]", :immediately
   action :nothing

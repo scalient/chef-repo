@@ -18,11 +18,11 @@ description "Unicorn"
 start on filesystem
 stop on runlevel [!2345]
 
-chdir <%= Pathname.new(@app_root).join("..").to_s.shellescape %>
+chdir <%= Pathname.new(@app_root).to_s.shellescape %>
 env RBENV_VERSION=<%= @rbenv_version.shellescape %>
 
 pre-start script
-    test -f <%= Pathname.new(@app_root).join("..", "Gemfile").to_s.shellescape %> || { stop; exit 0; }
+    test -f <%= Pathname.new(@app_root).join("Gemfile").to_s.shellescape %> || { stop; exit 0; }
 end script
 
 script

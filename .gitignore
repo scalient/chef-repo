@@ -1,6 +1,8 @@
 /Cheffile.lock
 /Gemfile.lock
 /.bundle/
+/.chef/*.pem
+/.chef/encrypted_data_bag_secret
 /.idea/
 /.rake_test_cache/
 /.yardoc/

@@ -1,6 +1,6 @@
-# chef-solo - Chef Solo
+# chef-client - Chef Client
 #
-# Chef Solo enables execution of recipes in the absence of a Chef server
+# Chef Client runs the Chef client on system startup
 #
 #  ____________________________________
 # / This file is managed by Chef. Your \
@@ -13,22 +13,28 @@
 #                 ||     ||
 #
 
-description "Chef Solo"
+description "Chef Client"
 
+<% if Pathname.new("/etc/init.d/chef-server").file? %>
+start on (filesystem and started chef-server)
+<% else %>
 start on filesystem
+<% end %>
+
 stop on runlevel [!2345]
 
 chdir /home/chef/client
 env RBENV_VERSION=<%= @rbenv_version.shellescape %>
 
 pre-start script
-    test -x "`rbenv exec bundle show chef`/bin/chef-solo" || { stop; exit 0; }
+    test -x "`rbenv exec bundle show chef`/bin/chef-client" || { stop; exit 0; }
 end script
 
 script
     prefix=<%= @prefix.shellescape %>
 
-    exec rbenv exec bundle exec chef-solo \
-        -c "${prefix}/etc/chef-solo/solo.rb" \
-        -L "${prefix}/var/log/chef-solo/solo.log"
+    exec rbenv exec bundle exec chef-client \
+        -c "${prefix}/etc/chef-client/client.rb" \
+        -L "${prefix}/var/log/chef-client/client.log" \
+        -o "recipe[scalient::aws]"
 end script

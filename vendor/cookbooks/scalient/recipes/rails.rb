@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012 Scalient LLC
+# Copyright 2012-2014 Scalient LLC
 
 class << self
-  include Scalient::Utils
+  include Scalient::Util
 end
+
+include_recipe "scalient::initialize"
+include_recipe "percolate"
 
 require "pathname"
 
 recipe = self
 user_home = Dir.home(recipe.original_user)
-app_dir = Pathname.new("apps").join(node.name.split(".", -1)[1]).expand_path(user_home)
 hostname = node.name
+app_dir = Pathname.new("apps").join(hostname.split(".", -1)[1]).expand_path(user_home)
 
-match_group = HashMatchGroup.new do
-  subgroup OrganizationMatchGroup.new("organizations")
-  subgroup HostnameMatchGroup.new("hostnames")
-end
-
-key_info = match_group.match(hostname, data_bag_item("keys", "aws"))
+key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
 access_key = key_info["access_key"]
 secret_key = key_info["secret_key"]
 
@@ -100,7 +98,7 @@ template app_dir.join("shared", "config", "airbrake.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:api_key => match_group.match(hostname, data_bag_item("monitoring", "airbrake")))
+  variables(:api_key => recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
   action :nothing
 end.action(:create)
 
@@ -119,6 +117,6 @@ template app_dir.join("shared", "config", "google_analytics.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:id => match_group.match(hostname, data_bag_item("analytics", "google")))
+  variables(:id => recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
   action :nothing
 end.action(:create)

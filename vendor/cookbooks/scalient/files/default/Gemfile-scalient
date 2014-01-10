@@ -9,3 +9,5 @@
 #                 ||     ||
 
 gem "fog"
+gem "percolate",
+    :github => "carsomyr/percolate"

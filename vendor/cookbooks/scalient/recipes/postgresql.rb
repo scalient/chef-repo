@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012 Scalient LLC
+# Copyright 2012-2014 Scalient LLC
 
 class << self
-  include Scalient::Utils
+  include Scalient::Util
 end
+
+include_recipe "scalient::initialize"
 
 require "pathname"
 require "shellwords"

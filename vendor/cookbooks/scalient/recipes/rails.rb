@@ -54,7 +54,7 @@ end
 if !ssl_info.nil?
   file ssl_dir.join("chef-#{domain_name}.crt").to_s do
     owner "root"
-    group "ssl-cert"
+    group "root"
     mode 0640
     content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
     action :nothing
@@ -62,7 +62,7 @@ if !ssl_info.nil?
 
   file ssl_dir.join("chef-#{domain_name}.key").to_s do
     owner "root"
-    group "ssl-cert"
+    group "root"
     mode 0640
     content ssl_info["key"].join("\n") + "\n"
     action :nothing

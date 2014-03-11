@@ -27,5 +27,5 @@ pre-start script
 end script
 
 script
-    exec sudo -E -u <%= @original_user.shellescape %> -- rbenv exec bundle exec sidekiq
+    exec sudo -E -u <%= @original_user.shellescape %> -- rbenv exec bundle exec sidekiq -e production
 end script

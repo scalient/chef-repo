@@ -121,6 +121,15 @@ end
   end.action(:create)
 end
 
+template app_dir.join("shared", "config", "action_mailer.yml").to_s do
+  source "action_mailer.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(hostname: node.name)
+  action :nothing
+end.action(:create)
+
 template app_dir.join("shared", "config", "airbrake.yml").to_s do
   source "airbrake.yml.erb"
   owner recipe.original_user

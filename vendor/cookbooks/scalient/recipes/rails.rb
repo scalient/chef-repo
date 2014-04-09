@@ -135,7 +135,7 @@ template app_dir.join("shared", "config", "airbrake.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:api_key => recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
+  variables(api_key: recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
   action :nothing
 end.action(:create)
 
@@ -144,8 +144,8 @@ template app_dir.join("shared", "config", "aws.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:access_key => access_key,
-            :secret_key => secret_key)
+  variables(access_key: access_key,
+            secret_key: secret_key)
   action :nothing
 end.action(:create)
 
@@ -154,6 +154,15 @@ template app_dir.join("shared", "config", "google_analytics.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(:id => recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
+  variables(id: recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
+  action :nothing
+end.action(:create)
+
+template app_dir.join("shared", "config", "secrets.yml").to_s do
+  source "secrets.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
   action :nothing
 end.action(:create)

@@ -36,13 +36,24 @@ if !workstation_info.nil?
     end.action(:create)
   end
 
+  generate_config_templates("rails-secret_key", work_dir) do |entity, config_dir|
+    template config_dir.join("secrets.yml").to_s do
+      source "secrets.yml.erb"
+      owner recipe.original_user
+      group recipe.original_group
+      mode 0644
+      variables(rails_secret_key: entity["rails_secret_key"])
+      action :nothing
+    end.action(:create)
+  end
+
   generate_config_templates("monitoring-airbrake", work_dir) do |entity, config_dir|
     template config_dir.join("airbrake.yml").to_s do
       source "airbrake.yml.erb"
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(:api_key => entity["airbrake_api_key"])
+      variables(api_key: entity["airbrake_api_key"])
       action :nothing
     end.action(:create)
   end
@@ -53,7 +64,7 @@ if !workstation_info.nil?
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(:id => entity["google_analytics_id"])
+      variables(id: entity["google_analytics_id"])
       action :nothing
     end.action(:create)
   end
@@ -64,8 +75,8 @@ if !workstation_info.nil?
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(:access_key => entity["aws"]["access_key"],
-                :secret_key => entity["aws"]["secret_key"])
+      variables(access_key: entity["aws"]["access_key"],
+                secret_key: entity["aws"]["secret_key"])
       action :nothing
     end.action(:create)
   end

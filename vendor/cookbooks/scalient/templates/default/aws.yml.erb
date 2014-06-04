@@ -1,3 +1,10 @@
 ---
-access_key: <%= @access_key.dump %>
-secret_key: <%= @secret_key.dump %>
+base: &base
+  access_key_id: <%= @access_key.dump %>
+  secret_access_key: <%= @secret_key.dump %>
+
+development: *base
+
+production: *base
+
+test: *base

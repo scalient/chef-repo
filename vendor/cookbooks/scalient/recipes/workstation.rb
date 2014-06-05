@@ -81,3 +81,19 @@ if !workstation_info.nil?
     end.action(:create)
   end
 end
+
+directory Pathname.new(Dir.home(original_user)).join(".chef").to_s do
+  owner recipe.original_user
+  group recipe.original_group
+  recursive true
+  action :nothing
+end.action(:create)
+
+template Pathname.new(Dir.home(original_user)).join(".chef/knife.rb").to_s do
+  source "knife.rb.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(chef_server_url: Chef::Config[:chef_server_url])
+  action :nothing
+end.action(:create)

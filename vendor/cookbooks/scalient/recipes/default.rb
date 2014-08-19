@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012-2014 Scalient LLC
+# All rights reserved.
+
+require "pathname"
+require "shellwords"
 
 class << self
   include Scalient::Util
@@ -8,9 +12,6 @@ end
 
 include_recipe "scalient::initialize"
 include_recipe "percolate"
-
-require "pathname"
-require "shellwords"
 
 recipe = self
 prefix_dir = Pathname.new("/usr/local")

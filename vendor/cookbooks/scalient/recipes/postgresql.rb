@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012-2014 Scalient LLC
+# All rights reserved.
+
+require "pathname"
+require "shellwords"
 
 class << self
   include Scalient::Util
 end
 
 include_recipe "scalient::initialize"
-
-require "pathname"
-require "shellwords"
 
 recipe = self
 cluster = node.name.split(".", -1)[1]

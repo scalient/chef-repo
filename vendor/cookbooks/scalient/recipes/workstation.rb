@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012-2014 Scalient LLC
+# All rights reserved.
+
+require "pathname"
 
 class << self
   include Scalient::Util
 end
 
 include_recipe "percolate"
-
-require "pathname"
 
 recipe = self
 user_home = Dir.home(recipe.original_user)

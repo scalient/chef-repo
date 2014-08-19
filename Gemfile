@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012 Scalient LLC
+# Copyright 2012-2014 Scalient LLC
+# All rights reserved.
 
 source "https://rubygems.org"
 
-gem "librarian"
-gem "redcarpet"
-gem "yard"
+gem "librarian-chef"

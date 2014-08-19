@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012-2014 Scalient LLC
+# All rights reserved.
+
+require "pathname"
 
 class << self
   include Scalient::Util
@@ -8,8 +11,6 @@ end
 
 include_recipe "scalient::initialize"
 include_recipe "percolate"
-
-require "pathname"
 
 recipe = self
 user_home = Dir.home(recipe.original_user)
@@ -39,15 +40,14 @@ end.action(:install)
 
 package "nodejs" do
   action :nothing
-  notifies :create, "link[/usr/bin/node]", :immediately
 end.action(:install)
 
 link "/usr/bin/node" do
-  to "nodejs"
+  to "/usr/bin/nodejs"
   owner "root"
   group "root"
   action :nothing
-end
+end.action(:create)
 
 # Is there SSL information for this hostname? If so, we need to do more work.
 

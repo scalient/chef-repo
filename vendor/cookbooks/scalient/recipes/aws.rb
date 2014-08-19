@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012-2014 Scalient LLC
+# All rights reserved.
 
 include_recipe "scalient::initialize"
 include_recipe "percolate"

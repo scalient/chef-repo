@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright 2012 Scalient LLC
+# All rights reserved.
 
 require "pathname"
 

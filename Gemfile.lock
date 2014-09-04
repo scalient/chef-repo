@@ -28,7 +28,7 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     ffi (1.9.3)
-    ffi-yajl (1.0.2)
+    ffi-yajl (1.1.0)
       ffi (~> 1.5)
       libyajl2 (~> 1.0)
     hashie (2.1.2)

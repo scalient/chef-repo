@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012 Scalient LLC
+# Copyright 2012-2014 Scalient LLC
 # All rights reserved.
 
 require "pathname"
@@ -13,7 +13,5 @@ long_description Pathname.new("../README.md").expand_path(__FILE__).open { |f| f
 version "0.9.0"
 
 depends "apt"
-depends "cap_ops"
-depends "erlang", "= 1.3.0"
 depends "percolate"
 depends "route53"

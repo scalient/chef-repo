@@ -10,29 +10,29 @@ class << self
   include Scalient::Util
 end
 
-include_recipe "scalient::initialize"
 include_recipe "percolate"
 
 recipe = self
 prefix_dir = Pathname.new("/usr/local")
-has_rabbitmq_server = Pathname.new("/usr/sbin/rabbitmqctl").executable?
 hostname = node.name
 
-key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
-access_key = key_info["access_key"]
-secret_key = key_info["secret_key"]
-
-cap_ops_recreate_rabbit_queue "reload-hostname" do
+chef_gem "install `fog` for #{recipe_name}" do
+  package_name "fog"
   action :nothing
-end
+end.action(:install)
+
+chef_gem "install `percolate` for #{recipe_name}" do
+  package_name "percolate"
+  action :nothing
+end.action(:install)
 
 template "/etc/hosts" do
   source "hosts.erb"
   owner "root"
   group "root"
   mode 0644
-  variables(:fqdn => hostname,
-            :hostname => hostname.split(".", -1)[0])
+  variables(fqdn: hostname,
+            hostname: hostname.split(".", -1)[0])
   action :nothing
 end.action(:create)
 
@@ -41,9 +41,8 @@ template "/etc/hostname" do
   owner "root"
   group "root"
   mode 0644
-  variables(:hostname => hostname.split(".", -1)[0])
-  notifies :run, "cap_ops_recreate_rabbit_queue[reload-hostname]", :immediately if has_rabbitmq_server
-  notifies :run, "bash[hostname]", :immediately if !has_rabbitmq_server
+  variables(hostname: hostname.split(".", -1)[0])
+  notifies :run, "bash[hostname]", :immediately
   action :nothing
 end.action(:create)
 
@@ -64,13 +63,18 @@ cookbook_file "/etc/ssh/ssh_known_hosts" do
   action :nothing
 end.action(:create)
 
-ruby_block "set-ec2-instance-name" do
+ruby_block "set EC2 instance name" do
   block do
     require "fog"
+    require "percolate"
 
-    compute = Fog::Compute.new({:provider => "aws",
-                                :aws_access_key_id => access_key,
-                                :aws_secret_access_key => secret_key})
+    key_info = recipe.percolator.find("keys-aws", :hostname, hostname)["aws"]
+    access_key = key_info["access_key"]
+    secret_key = key_info["secret_key"]
+
+    compute = Fog::Compute.new({provider: "aws",
+                                aws_access_key_id: access_key,
+                                aws_secret_access_key: secret_key})
     compute.create_tags([node["ec2"]["instance_id"]], "Name" => hostname)
   end
 end
@@ -80,8 +84,8 @@ template "/etc/init/chef-client.conf" do
   owner "root"
   group "root"
   mode 0644
-  variables(:rbenv_version => Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
-            :prefix => prefix_dir.to_s)
+  variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
+            prefix: prefix_dir.to_s)
   notifies :create, "link[/etc/init.d/chef-client]", :immediately
   action :nothing
 end.action(:create)

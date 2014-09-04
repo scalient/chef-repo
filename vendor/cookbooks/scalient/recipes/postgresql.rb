@@ -10,8 +10,6 @@ class << self
   include Scalient::Util
 end
 
-include_recipe "scalient::initialize"
-
 recipe = self
 cluster = node.name.split(".", -1)[1]
 postgresql_conf_dir = Pathname.new("/etc/postgresql").join(Scalient::PostgreSQL::VERSION, cluster)
@@ -23,7 +21,7 @@ template "/etc/sysctl.conf" do
   owner "root"
   group "root"
   mode 0644
-  variables(:kernel_shmmax => Scalient::PostgreSQL::CACHE_SIZE * 1024 * 1024)
+  variables(kernel_shmmax: Scalient::PostgreSQL::CACHE_SIZE * 1024 * 1024)
   notifies :run, "bash[sysctl]", :immediately
   action :nothing
 end.action(:create)
@@ -71,10 +69,10 @@ template postgresql_conf_dir.join("postgresql.conf").to_s do
   owner "postgres"
   group "postgres"
   mode 0644
-  variables(:cluster => cluster,
-            :prefix => Scalient::PREFIX,
-            :version => Scalient::PostgreSQL::VERSION,
-            :cache_size => Scalient::PostgreSQL::CACHE_SIZE)
+  variables(cluster: cluster,
+            prefix: Scalient::PREFIX,
+            version: Scalient::PostgreSQL::VERSION,
+            cache_size: Scalient::PostgreSQL::CACHE_SIZE)
   notifies :restart, "service[postgresql]", :immediately
   action :nothing
 end.action(:create)

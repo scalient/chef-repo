@@ -5,9 +5,5 @@
 
 site "https://supermarket.getchef.com/api/v1"
 
-cookbook "cap_ops",
-         git: "git://github.com/scalient/cap-ops.git",
-         ref: "chef-cookbook"
-cookbook "erlang", "= 1.3.0"
 cookbook "scalient",
          path: "vendor/cookbooks/scalient"

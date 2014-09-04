@@ -13,7 +13,7 @@ node_name       "chef-knife"
 client_key      Pathname.new(".chef/knife.pem").expand_path(Dir.home).to_s
 chef_server_url <%= @chef_server_url.dump %>
 cache_type      "BasicFile"
-cache_options   :path => Pathname.new(".chef/checksums").expand_path(Dir.home).to_s
+cache_options   path: Pathname.new(".chef/checksums").expand_path(Dir.home).to_s
 
 if has_librarian_chef
   cookbook_path Librarian::Chef.install_path

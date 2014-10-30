@@ -7,10 +7,9 @@ require "pathname"
 require "shellwords"
 
 class << self
+  include Percolate
   include Scalient::Util
 end
-
-include_recipe "percolate"
 
 recipe = self
 prefix_dir = Pathname.new("/usr/local")

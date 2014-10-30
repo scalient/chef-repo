@@ -6,10 +6,9 @@
 require "pathname"
 
 class << self
+  include Percolate
   include Scalient::Util
 end
-
-include_recipe "percolate"
 
 recipe = self
 user_home = Dir.home(recipe.original_user)

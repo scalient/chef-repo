@@ -4,10 +4,9 @@
 # All rights reserved.
 
 class << self
+  include Percolate
   include Scalient::Util
 end
-
-include_recipe "percolate"
 
 recipe = self
 hostname = node.name

@@ -3,7 +3,7 @@ SITE
   specs:
     apt (2.6.0)
     build-essential (2.1.2)
-    percolate (0.9.1)
+    percolate (0.9.2)
     route53 (0.3.6)
       build-essential (>= 0.0.0)
 

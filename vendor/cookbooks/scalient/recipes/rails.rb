@@ -49,6 +49,10 @@ link "/usr/bin/node" do
   action :nothing
 end.action(:create)
 
+package "npm" do
+  action :nothing
+end.action(:install)
+
 service "nginx" do
   action :nothing
 end
@@ -87,6 +91,10 @@ end
     action :nothing
   end.action(:create)
 end
+
+nodejs_npm "bower" do
+  action :nothing
+end.action(:install)
 
 ruby_block "find Percolate info for #{recipe_name}" do
   block do

@@ -13,5 +13,6 @@ long_description Pathname.new("../README.md").expand_path(__FILE__).open { |f| f
 version "0.9.0"
 
 depends "apt"
+depends "nodejs"
 depends "percolate"
 depends "route53"

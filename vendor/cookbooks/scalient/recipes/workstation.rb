@@ -83,7 +83,8 @@ if !workstation_info.nil?
           group recipe.original_group
           mode 0644
           variables(access_key: entity["aws"]["access_key"],
-                    secret_key: entity["aws"]["secret_key"])
+                    secret_key: entity["aws"]["secret_key"],
+                    region: entity["aws"]["region"])
           action :nothing
         end.action(:create)
       end

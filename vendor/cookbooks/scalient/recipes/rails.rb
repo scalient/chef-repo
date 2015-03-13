@@ -97,6 +97,7 @@ ruby_block "find Percolate info for #{recipe_name}" do
     key_info = recipe.percolator.find("keys-aws", :hostname, hostname)["aws"]
     access_key = key_info["access_key"]
     secret_key = key_info["secret_key"]
+    region = key_info["region"]
 
     ssl_info = recipe.percolator.find("certificates", :hostname, hostname)
     ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
@@ -158,7 +159,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
       group recipe.original_group
       mode 0644
       variables(access_key: access_key,
-                secret_key: secret_key)
+                secret_key: secret_key,
+                region: region)
       action :nothing
     end.action(:create)
 

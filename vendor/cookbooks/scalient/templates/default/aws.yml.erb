@@ -1,7 +1,8 @@
 ---
 base: &base
-  access_key_id: <%= @access_key.dump %>
-  secret_access_key: <%= @secret_key.dump %>
+  :access_key_id: <%= @access_key.dump %>
+  :secret_access_key: <%= @secret_key.dump %>
+  :region: <%= @region.dump %>
 
 development: *base
 

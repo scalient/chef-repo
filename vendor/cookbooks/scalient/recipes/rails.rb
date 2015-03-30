@@ -45,7 +45,7 @@ package "nodejs" do
 end
 
 link "/usr/bin/node" do
-  to "/usr/bin/nodejs"
+  to "nodejs"
   owner "root"
   group "root"
   action :create

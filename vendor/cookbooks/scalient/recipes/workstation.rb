@@ -22,6 +22,7 @@ end
 
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
+  compile_time true
   action :nothing
 end.action(:install)
 

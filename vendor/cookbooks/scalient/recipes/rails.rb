@@ -18,11 +18,13 @@ app_dir = Pathname.new("apps").join(hostname.split(".", -1)[1]).expand_path(user
 
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
+  compile_time true
   action :nothing
 end.action(:install)
 
 chef_gem "install `bundler` for #{recipe_name}" do
   package_name "bundler"
+  compile_time true
   action :nothing
 end.action(:install)
 

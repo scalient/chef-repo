@@ -17,11 +17,13 @@ hostname = node.name
 
 chef_gem "install `fog` for #{recipe_name}" do
   package_name "fog"
+  compile_time true
   action :nothing
 end.action(:install)
 
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
+  compile_time true
   action :nothing
 end.action(:install)
 

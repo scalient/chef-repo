@@ -23,8 +23,8 @@ template "/etc/sysctl.conf" do
   mode 0644
   variables(kernel_shmmax: Scalient::PostgreSQL::CACHE_SIZE * 1024 * 1024)
   notifies :run, "bash[sysctl]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 bash "sysctl" do
   user "root"
@@ -37,32 +37,32 @@ end
 
 package "postgresql-" + Scalient::PostgreSQL::VERSION do
   notifies :stop, "service[postgresql]", :immediately
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 directory postgresql_conf_dir.parent.join("main").to_s do
   recursive true
-  action :nothing
-end.action(:delete)
+  action :delete
+end
 
 directory postgresql_data_dir.parent.join("main").to_s do
   recursive true
-  action :nothing
-end.action(:delete)
+  action :delete
+end
 
 directory postgresql_conf_dir.to_s do
   owner "postgres"
   group "postgres"
   mode 0755
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 directory postgresql_data_dir.to_s do
   owner "postgres"
   group "postgres"
   mode 0700
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 template postgresql_conf_dir.join("postgresql.conf").to_s do
   source "postgresql.conf.erb"
@@ -74,8 +74,8 @@ template postgresql_conf_dir.join("postgresql.conf").to_s do
             version: Scalient::PostgreSQL::VERSION,
             cache_size: Scalient::PostgreSQL::CACHE_SIZE)
   notifies :restart, "service[postgresql]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 cookbook_file postgresql_conf_dir.join("pg_hba.conf").to_s do
   source "pg_hba.conf"
@@ -83,8 +83,8 @@ cookbook_file postgresql_conf_dir.join("pg_hba.conf").to_s do
   group "postgres"
   mode 0640
   notifies :restart, "service[postgresql]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 cookbook_file postgresql_conf_dir.join("pg_ident.conf").to_s do
   source "pg_ident.conf"
@@ -92,8 +92,8 @@ cookbook_file postgresql_conf_dir.join("pg_ident.conf").to_s do
   group "postgres"
   mode 0640
   notifies :restart, "service[postgresql]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 bash "initdb" do
   user "postgres"
@@ -107,8 +107,8 @@ EOF
   notifies :restart, "service[postgresql]", :immediately
   notifies :run, "bash[createuser]", :immediately
   notifies :run, "bash[createdb]", :immediately
-  action :nothing
-end.action(:run)
+  action :run
+end
 
 link postgresql_data_dir.join("server.crt").to_s do
   to "/etc/ssl/certs/ssl-cert-snakeoil.pem"

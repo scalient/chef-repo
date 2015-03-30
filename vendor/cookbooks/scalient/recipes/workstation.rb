@@ -23,8 +23,8 @@ end
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 workstation_info = data_bag_item("workstations", "default")[node.name]
 
@@ -40,8 +40,8 @@ if !workstation_info.nil?
           group recipe.original_group
           mode 0644
           variables(hostname: "localhost")
-          action :nothing
-        end.action(:create)
+          action :create
+        end
       end
 
       recipe.generate_config_templates("rails-secret_key", work_dir) do |entity, config_dir|
@@ -51,8 +51,8 @@ if !workstation_info.nil?
           group recipe.original_group
           mode 0644
           variables(rails_secret_key: entity["rails_secret_key"])
-          action :nothing
-        end.action(:create)
+          action :create
+        end
       end
 
       recipe.generate_config_templates("monitoring-airbrake", work_dir) do |entity, config_dir|
@@ -62,8 +62,8 @@ if !workstation_info.nil?
           group recipe.original_group
           mode 0644
           variables(api_key: entity["airbrake_api_key"])
-          action :nothing
-        end.action(:create)
+          action :create
+        end
       end
 
       recipe.generate_config_templates("analytics-google", work_dir) do |entity, config_dir|
@@ -73,8 +73,8 @@ if !workstation_info.nil?
           group recipe.original_group
           mode 0644
           variables(id: entity["google_analytics_id"])
-          action :nothing
-        end.action(:create)
+          action :create
+        end
       end
 
       recipe.generate_config_templates("keys-aws", work_dir) do |entity, config_dir|
@@ -86,11 +86,11 @@ if !workstation_info.nil?
           variables(access_key: entity["aws"]["access_key"],
                     secret_key: entity["aws"]["secret_key"],
                     region: entity["aws"]["region"])
-          action :nothing
-        end.action(:create)
+          action :create
+        end
       end
     end
 
-    action :nothing
-  end.action(:run)
+    action :run
+  end
 end

@@ -19,37 +19,37 @@ app_dir = Pathname.new("apps").join(hostname.split(".", -1)[1]).expand_path(user
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 chef_gem "install `bundler` for #{recipe_name}" do
   package_name "bundler"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 package "nginx" do
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 package "libpq-dev" do
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 package "libsqlite3-dev" do
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 package "nodejs" do
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 link "/usr/bin/node" do
   to "/usr/bin/nodejs"
   owner "root"
   group "root"
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 service "nginx" do
   action :nothing
@@ -64,8 +64,8 @@ template "/etc/init/unicorn.conf" do
             app_root: app_dir.join("current").to_s,
             original_user: recipe.original_user)
   notifies :create, "link[/etc/init.d/unicorn]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 link "/etc/init.d/unicorn" do
   to "/lib/init/upstart-job"
@@ -86,13 +86,13 @@ end
     owner recipe.original_user
     group recipe.original_group
     mode 0755
-    action :nothing
-  end.action(:create)
+    action :create
+  end
 end
 
 nodejs_npm "bower" do
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 ruby_block "find Percolate info for #{recipe_name}" do
   block do
@@ -112,16 +112,16 @@ ruby_block "find Percolate info for #{recipe_name}" do
         group "root"
         mode 0640
         content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
-        action :nothing
-      end.action(:create)
+        action :create
+      end
 
       recipe.file ssl_dir.join("chef-#{domain_name}.key").to_s do
         owner "root"
         group "root"
         mode 0640
         content ssl_info["key"].join("\n") + "\n"
-        action :nothing
-      end.action(:create)
+        action :create
+      end
     end
 
     recipe.template "/etc/nginx/sites-available/default" do
@@ -134,8 +134,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
                 ssl_dir: ssl_dir.to_s,
                 domain_name: domain_name)
       notifies :restart, "service[nginx]", :immediately
-      action :nothing
-    end.action(:create)
+      action :create
+    end
 
     recipe.template app_dir.join("shared", "config", "action_mailer.yml").to_s do
       source "action_mailer.yml.erb"
@@ -143,8 +143,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
       group recipe.original_group
       mode 0644
       variables(hostname: node.name)
-      action :nothing
-    end.action(:create)
+      action :create
+    end
 
     recipe.template app_dir.join("shared", "config", "airbrake.yml").to_s do
       source "airbrake.yml.erb"
@@ -152,8 +152,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
       group recipe.original_group
       mode 0644
       variables(api_key: recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
-      action :nothing
-    end.action(:create)
+      action :create
+    end
 
     recipe.template app_dir.join("shared", "config", "aws.yml").to_s do
       source "aws.yml.erb"
@@ -163,8 +163,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
       variables(access_key: access_key,
                 secret_key: secret_key,
                 region: region)
-      action :nothing
-    end.action(:create)
+      action :create
+    end
 
     recipe.template app_dir.join("shared", "config", "google_analytics.yml").to_s do
       source "google_analytics.yml.erb"
@@ -172,8 +172,8 @@ ruby_block "find Percolate info for #{recipe_name}" do
       group recipe.original_group
       mode 0644
       variables(id: recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
-      action :nothing
-    end.action(:create)
+      action :create
+    end
 
     recipe.template app_dir.join("shared", "config", "secrets.yml").to_s do
       source "secrets.yml.erb"
@@ -181,9 +181,9 @@ ruby_block "find Percolate info for #{recipe_name}" do
       group recipe.original_group
       mode 0644
       variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
-      action :nothing
-    end.action(:create)
+      action :create
+    end
   end
 
-  action :nothing
-end.action(:run)
+  action :run
+end

@@ -18,14 +18,14 @@ hostname = node.name
 chef_gem "install `fog` for #{recipe_name}" do
   package_name "fog"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 template "/etc/hosts" do
   source "hosts.erb"
@@ -34,8 +34,8 @@ template "/etc/hosts" do
   mode 0644
   variables(fqdn: hostname,
             hostname: hostname.split(".", -1)[0])
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 template "/etc/hostname" do
   source "hostname.erb"
@@ -44,8 +44,8 @@ template "/etc/hostname" do
   mode 0644
   variables(hostname: hostname.split(".", -1)[0])
   notifies :run, "bash[hostname]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 bash "hostname" do
   user "root"
@@ -61,8 +61,8 @@ cookbook_file "/etc/ssh/ssh_known_hosts" do
   owner "root"
   group "root"
   mode 0644
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 ruby_block "set EC2 instance name" do
   block do
@@ -88,8 +88,8 @@ template "/etc/init/chef-client.conf" do
   variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
             prefix: prefix_dir.to_s)
   notifies :create, "link[/etc/init.d/chef-client]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 link "/etc/init.d/chef-client" do
   to "/lib/init/upstart-job"

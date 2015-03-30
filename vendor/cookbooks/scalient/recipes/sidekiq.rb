@@ -17,8 +17,8 @@ app_dir = Pathname.new("apps").join(hostname.split(".", -1)[1]).expand_path(user
 chef_gem "install `bundler` for #{recipe_name}" do
   package_name "bundler"
   compile_time true
-  action :nothing
-end.action(:install)
+  action :install
+end
 
 template "/etc/init/sidekiq.conf" do
   source "sidekiq.conf.erb"
@@ -29,8 +29,8 @@ template "/etc/init/sidekiq.conf" do
             app_root: app_dir.join("current"),
             original_user: recipe.original_user)
   notifies :create, "link[/etc/init.d/sidekiq]", :immediately
-  action :nothing
-end.action(:create)
+  action :create
+end
 
 link "/etc/init.d/sidekiq" do
   to "/lib/init/upstart-job"
@@ -41,5 +41,5 @@ end
 
 # Redis is used by Sidekiq.
 package "redis-server" do
-  action :nothing
-end.action(:install)
+  action :install
+end

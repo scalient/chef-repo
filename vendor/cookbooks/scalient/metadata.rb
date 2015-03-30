@@ -5,6 +5,7 @@
 
 require "pathname"
 
+name "scalient"
 maintainer "Roy Liu"
 maintainer_email "roy@scalient.net"
 license "All rights reserved"

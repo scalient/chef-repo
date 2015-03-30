@@ -25,7 +25,7 @@ chef_gem "install `percolate` for #{recipe_name}" do
   action :nothing
 end.action(:install)
 
-workstation_info = data_bag_item("init-workstation", "default")[node.name]
+workstation_info = data_bag_item("workstations", "default")[node.name]
 
 if !workstation_info.nil?
   work_dir = Pathname.new(workstation_info["work_dir"]).expand_path(user_home)

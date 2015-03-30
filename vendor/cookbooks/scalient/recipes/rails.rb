@@ -116,6 +116,7 @@ ruby_block "find Percolate info for #{recipe_name}" do
         group "root"
         mode 0640
         content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
+        sensitive true
         action :create
       end
 
@@ -124,6 +125,7 @@ ruby_block "find Percolate info for #{recipe_name}" do
         group "root"
         mode 0640
         content ssl_info["key"].join("\n") + "\n"
+        sensitive true
         action :create
       end
     end

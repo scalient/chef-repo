@@ -98,98 +98,92 @@ nodejs_npm "bower" do
   action :install
 end
 
-ruby_block "find Percolate info for #{recipe_name}" do
-  block do
-    key_info = recipe.percolator.find("keys-aws", :hostname, hostname)["aws"]
-    access_key = key_info["access_key"]
-    secret_key = key_info["secret_key"]
-    region = key_info["region"]
+key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
+access_key = key_info["access_key"]
+secret_key = key_info["secret_key"]
+region = key_info["region"]
 
-    ssl_info = recipe.percolator.find("certificates", :hostname, hostname)
-    ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
-    ssl_dir = Pathname.new("/etc/ssl/private")
+ssl_info = percolator.find("certificates", :hostname, hostname)
+ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
+ssl_dir = Pathname.new("/etc/ssl/private")
 
-    # Is there SSL information for this hostname? If so, we need to do more work.
-    if !ssl_info.nil?
-      recipe.file ssl_dir.join("chef-#{domain_name}.crt").to_s do
-        owner "root"
-        group "root"
-        mode 0640
-        content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
-        sensitive true
-        action :create
-      end
-
-      recipe.file ssl_dir.join("chef-#{domain_name}.key").to_s do
-        owner "root"
-        group "root"
-        mode 0640
-        content ssl_info["key"].join("\n") + "\n"
-        sensitive true
-        action :create
-      end
-    end
-
-    recipe.template "/etc/nginx/sites-available/default" do
-      source "default.erb"
-      owner "root"
-      group "root"
-      mode 0644
-      variables(app_root: app_dir.join("current", "public").to_s,
-                use_ssl: !ssl_info.nil?,
-                ssl_dir: ssl_dir.to_s,
-                domain_name: domain_name)
-      notifies :restart, "service[nginx]", :immediately
-      action :create
-    end
-
-    recipe.template app_dir.join("shared", "config", "action_mailer.yml").to_s do
-      source "action_mailer.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(hostname: node.name)
-      action :create
-    end
-
-    recipe.template app_dir.join("shared", "config", "airbrake.yml").to_s do
-      source "airbrake.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(api_key: recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
-      action :create
-    end
-
-    recipe.template app_dir.join("shared", "config", "aws.yml").to_s do
-      source "aws.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(access_key: access_key,
-                secret_key: secret_key,
-                region: region)
-      action :create
-    end
-
-    recipe.template app_dir.join("shared", "config", "google_analytics.yml").to_s do
-      source "google_analytics.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(id: recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
-      action :create
-    end
-
-    recipe.template app_dir.join("shared", "config", "secrets.yml").to_s do
-      source "secrets.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
-      action :create
-    end
+# Is there SSL information for this hostname? If so, we need to do more work.
+if !ssl_info.nil?
+  file ssl_dir.join("chef-#{domain_name}.crt").to_s do
+    owner "root"
+    group "root"
+    mode 0640
+    content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
+    sensitive true
+    action :create
   end
 
-  action :run
+  file ssl_dir.join("chef-#{domain_name}.key").to_s do
+    owner "root"
+    group "root"
+    mode 0640
+    content ssl_info["key"].join("\n") + "\n"
+    sensitive true
+    action :create
+  end
+end
+
+template "/etc/nginx/sites-available/default" do
+  source "default.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  variables(app_root: app_dir.join("current", "public").to_s,
+            use_ssl: !ssl_info.nil?,
+            ssl_dir: ssl_dir.to_s,
+            domain_name: domain_name)
+  notifies :restart, "service[nginx]", :immediately
+  action :create
+end
+
+template app_dir.join("shared", "config", "action_mailer.yml").to_s do
+  source "action_mailer.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(hostname: node.name)
+  action :create
+end
+
+template app_dir.join("shared", "config", "airbrake.yml").to_s do
+  source "airbrake.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(api_key: recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
+  action :create
+end
+
+template app_dir.join("shared", "config", "aws.yml").to_s do
+  source "aws.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(access_key: access_key,
+            secret_key: secret_key,
+            region: region)
+  action :create
+end
+
+template app_dir.join("shared", "config", "google_analytics.yml").to_s do
+  source "google_analytics.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(id: recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
+  action :create
+end
+
+template app_dir.join("shared", "config", "secrets.yml").to_s do
+  source "secrets.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
+  action :create
 end

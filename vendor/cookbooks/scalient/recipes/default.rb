@@ -64,21 +64,16 @@ cookbook_file "/etc/ssh/ssh_known_hosts" do
   action :create
 end
 
-ruby_block "set EC2 instance name" do
-  block do
-    require "fog"
-    require "percolate"
+require "fog"
 
-    key_info = recipe.percolator.find("keys-aws", :hostname, hostname)["aws"]
-    access_key = key_info["access_key"]
-    secret_key = key_info["secret_key"]
+key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
+access_key = key_info["access_key"]
+secret_key = key_info["secret_key"]
 
-    compute = Fog::Compute.new({provider: "aws",
-                                aws_access_key_id: access_key,
-                                aws_secret_access_key: secret_key})
-    compute.create_tags([node["ec2"]["instance_id"]], "Name" => hostname)
-  end
-end
+compute = Fog::Compute.new({provider: "aws",
+                            aws_access_key_id: access_key,
+                            aws_secret_access_key: secret_key})
+compute.create_tags([node["ec2"]["instance_id"]], "Name" => hostname)
 
 template "/etc/init/chef-client.conf" do
   source "chef-client.conf.erb"

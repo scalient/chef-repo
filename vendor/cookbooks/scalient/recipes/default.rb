@@ -75,20 +75,25 @@ compute = Fog::Compute.new({provider: "aws",
                             aws_secret_access_key: secret_key})
 compute.create_tags([node["ec2"]["instance_id"]], "Name" => hostname)
 
-template "/etc/init/chef-client.conf" do
-  source "chef-client.conf.erb"
+template "/lib/systemd/system/chef-client.service" do
+  source "chef-client.service.erb"
   owner "root"
   group "root"
   mode 0644
   variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
             prefix: prefix_dir.to_s)
-  notifies :create, "link[/etc/init.d/chef-client]", :immediately
+  notifies :create, "link[/etc/systemd/system/multi-user.target.wants/chef-client.service]", :immediately
   action :create
 end
 
-link "/etc/init.d/chef-client" do
-  to "/lib/init/upstart-job"
+link "/etc/systemd/system/multi-user.target.wants/chef-client.service" do
+  to "/lib/systemd/system/chef-client.service"
   owner "root"
   group "root"
   action :nothing
+end
+
+# The `ntpd` service prevents server clock skew.
+package "ntp" do
+  action :install
 end

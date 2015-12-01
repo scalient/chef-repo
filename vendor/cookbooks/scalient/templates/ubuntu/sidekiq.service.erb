@@ -1,0 +1,24 @@
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+#
+
+[Unit]
+Description=Sidekiq uses threads to handle many jobs at the same time in the same process. It does not require Rails \
+    but will integrate tightly with Rails 3/4 to make background processing dead simple.
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/apps/affective/current
+Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
+ExecStart=/usr/bin/sudo -E -u ubuntu -- rbenv exec bundle exec sidekiq -e production
+
+[Install]
+WantedBy=multi-user.target

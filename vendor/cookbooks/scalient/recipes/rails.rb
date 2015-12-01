@@ -59,20 +59,20 @@ service "nginx" do
   action :nothing
 end
 
-template "/etc/init/unicorn.conf" do
-  source "unicorn.conf.erb"
+template "/lib/systemd/system/unicorn.service" do
+  source "unicorn.service.erb"
   owner "root"
   group "root"
   mode 0644
   variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
             app_root: app_dir.join("current").to_s,
             original_user: recipe.original_user)
-  notifies :create, "link[/etc/init.d/unicorn]", :immediately
+  notifies :create, "link[/etc/systemd/system/multi-user.target.wants/unicorn.service]", :immediately
   action :create
 end
 
-link "/etc/init.d/unicorn" do
-  to "/lib/init/upstart-job"
+link "/etc/systemd/system/multi-user.target.wants/unicorn.service" do
+  to "/lib/systemd/system/unicorn.service"
   owner "root"
   group "root"
   action :nothing

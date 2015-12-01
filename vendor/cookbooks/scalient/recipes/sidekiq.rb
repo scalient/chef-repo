@@ -20,20 +20,20 @@ chef_gem "install `bundler` for #{recipe_name}" do
   action :install
 end
 
-template "/etc/init/sidekiq.conf" do
-  source "sidekiq.conf.erb"
+template "/lib/systemd/system/sidekiq.service" do
+  source "sidekiq.service.erb"
   owner "root"
   group "root"
   mode 0644
   variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
             app_root: app_dir.join("current"),
             original_user: recipe.original_user)
-  notifies :create, "link[/etc/init.d/sidekiq]", :immediately
+  notifies :create, "link[/etc/systemd/system/multi-user.target.wants/sidekiq.service]", :immediately
   action :create
 end
 
-link "/etc/init.d/sidekiq" do
-  to "/lib/init/upstart-job"
+link "/etc/systemd/system/multi-user.target.wants/sidekiq.service" do
+  to "/lib/systemd/system/sidekiq.service"
   owner "root"
   group "root"
   action :nothing

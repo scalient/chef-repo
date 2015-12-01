@@ -1,0 +1,25 @@
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+#
+
+[Unit]
+Description=Unicorn is an HTTP server for Rack applications.
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/apps/affective/current
+Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
+ExecStart=/usr/bin/sudo -u ubuntu -- rbenv exec bundle exec unicorn_rails \
+    -E production \
+    -c config/unicorn.rb
+
+[Install]
+WantedBy=multi-user.target

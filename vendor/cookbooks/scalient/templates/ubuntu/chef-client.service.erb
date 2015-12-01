@@ -1,0 +1,25 @@
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+#
+
+[Unit]
+Description=Chef Client runs the Chef client on system startup
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/apps/affective/current
+Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
+ExecStart=/usr/bin/rbenv exec chef-client \
+    -c <%= @prefix.shellescape %>/etc/chef-client/client.rb \
+    -L <%= @prefix.shellescape %>/var/log/chef-client/client.log \
+    -o recipe[scalient::aws]
+
+[Install]
+WantedBy=multi-user.target

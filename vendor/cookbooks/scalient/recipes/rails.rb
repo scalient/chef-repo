@@ -51,10 +51,6 @@ link "/usr/bin/node" do
   action :create
 end
 
-package "npm" do
-  action :install
-end
-
 service "nginx" do
   action :nothing
 end

@@ -15,8 +15,8 @@ recipe = self
 prefix_dir = Pathname.new("/usr/local")
 hostname = node.name
 
-chef_gem "install `fog` for #{recipe_name}" do
-  package_name "fog"
+chef_gem "install `fog-aws` for #{recipe_name}" do
+  package_name "fog-aws"
   compile_time true
   action :install
 end
@@ -64,7 +64,7 @@ cookbook_file "/etc/ssh/ssh_known_hosts" do
   action :create
 end
 
-require "fog"
+require "fog/aws"
 
 key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
 access_key = key_info["access_key"]

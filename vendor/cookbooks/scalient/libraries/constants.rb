@@ -12,6 +12,6 @@ module Scalient
     CACHE_SIZE = 2048
 
     # The current version.
-    VERSION = "9.4"
+    VERSION = "9.5"
   end
 end

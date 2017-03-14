@@ -12,8 +12,8 @@ recipe = self
 hostname = node.name
 domain_name = hostname.split(".", -1)[1...3].join(".")
 
-chef_gem "install `fog` for #{recipe_name}" do
-  package_name "fog"
+chef_gem "install `fog-aws` for #{recipe_name}" do
+  package_name "fog-aws"
   compile_time true
   action :install
 end
@@ -24,7 +24,7 @@ chef_gem "install `percolate` for #{recipe_name}" do
   action :install
 end
 
-require "fog"
+require "fog/aws"
 
 key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
 route53_info = percolator.find("dns-aws", :hostname, hostname)["aws-route53"]

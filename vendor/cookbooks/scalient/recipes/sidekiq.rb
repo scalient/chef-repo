@@ -26,7 +26,7 @@ template "/lib/systemd/system/sidekiq.service" do
   group "root"
   mode 0644
   variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
-            app_root: app_dir.join("current"),
+            app_root: app_dir.join("current").to_s,
             original_user: recipe.original_user)
   notifies :create, "link[/etc/systemd/system/multi-user.target.wants/sidekiq.service]", :immediately
   action :create

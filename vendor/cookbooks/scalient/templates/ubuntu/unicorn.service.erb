@@ -15,9 +15,9 @@ Requires=postgresql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/ubuntu/apps/affective/current
+WorkingDirectory=<%= @app_root.shellescape %>
 Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
-ExecStart=/usr/bin/sudo -u ubuntu -- rbenv exec bundle exec unicorn_rails \
+ExecStart=/usr/bin/sudo -u <%= @original_user.shellescape %> -- rbenv exec bundle exec unicorn_rails \
     -E production \
     -c config/unicorn.rb
 

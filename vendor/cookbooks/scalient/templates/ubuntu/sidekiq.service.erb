@@ -16,9 +16,9 @@ Requires=postgresql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/ubuntu/apps/affective/current
+WorkingDirectory=<%= @app_root.shellescape %>
 Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
-ExecStart=/usr/bin/sudo -E -u ubuntu -- rbenv exec bundle exec sidekiq -e production
+ExecStart=/usr/bin/sudo -E -u <%= @original_user.shellescape %> -- rbenv exec bundle exec sidekiq -e production
 
 [Install]
 WantedBy=multi-user.target

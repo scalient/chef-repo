@@ -40,16 +40,6 @@ package "postgresql-" + Scalient::PostgreSQL::VERSION do
   action :install
 end
 
-directory postgresql_conf_dir.parent.join("main").to_s do
-  recursive true
-  action :delete
-end
-
-directory postgresql_data_dir.parent.join("main").to_s do
-  recursive true
-  action :delete
-end
-
 directory postgresql_conf_dir.to_s do
   owner "postgres"
   group "postgres"
@@ -125,14 +115,6 @@ link postgresql_data_dir.join("server.key").to_s do
 end
 
 service "postgresql" do
-  only_if do
-    !postgresql_conf_dir.exist? \
-      || (postgresql_conf_dir.join("postgresql.conf").exist? \
-      && postgresql_conf_dir.join("pg_hba.conf").exist? \
-      && postgresql_conf_dir.join("pg_ident.conf").exist? \
-      && postgresql_data_dir.join("PG_VERSION").exist?)
-  end
-
   action :nothing
 end
 

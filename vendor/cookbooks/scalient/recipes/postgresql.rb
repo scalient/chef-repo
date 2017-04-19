@@ -22,11 +22,11 @@ template "/etc/sysctl.conf" do
   group "root"
   mode 0644
   variables(kernel_shmmax: Scalient::PostgreSQL::CACHE_SIZE * 1024 * 1024)
-  notifies :run, "bash[sysctl]", :immediately
+  notifies :run, "bash[sysctl -p]", :immediately
   action :create
 end
 
-bash "sysctl" do
+bash "sysctl -p" do
   user "root"
   group "root"
   code <<EOF
@@ -35,9 +35,19 @@ EOF
   action :nothing
 end
 
-package "postgresql-" + Scalient::PostgreSQL::VERSION do
-  notifies :stop, "service[postgresql]", :immediately
+package "postgresql-#{Scalient::PostgreSQL::VERSION}" do
   action :install
+end
+
+# Remove the `main` cluster so that it doesn't interfere with our cluster.
+bash "pg_dropcluster --stop -- #{Scalient::PostgreSQL::VERSION} main" do
+  user "root"
+  group "root"
+  code <<EOF
+exec -- pg_dropcluster --stop -- #{Scalient::PostgreSQL::VERSION} main
+EOF
+  returns [0, 1]
+  action :run
 end
 
 directory postgresql_conf_dir.to_s do
@@ -85,19 +95,27 @@ cookbook_file postgresql_conf_dir.join("pg_ident.conf").to_s do
   action :create
 end
 
-bash "initdb" do
+bash "#{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data_dir.to_s.shellescape} -E UTF8" do
   user "postgres"
   group "postgres"
   code <<EOF
 exec -- #{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data_dir.to_s.shellescape} -E UTF8
 EOF
-  only_if { (postgresql_data_dir.entries - [".", ".."].map { |s| Pathname.new (s) }).empty? }
+  only_if {(postgresql_data_dir.entries - [".", ".."].map {|s| Pathname.new (s)}).empty?}
   notifies :create, "link[#{postgresql_data_dir.join("server.crt")}]", :immediately
   notifies :create, "link[#{postgresql_data_dir.join("server.key")}]", :immediately
   notifies :restart, "service[postgresql]", :immediately
-  notifies :run, "bash[createuser]", :immediately
-  notifies :run, "bash[createdb]", :immediately
+  notifies :run, "bash[createdb -- #{recipe.original_user.shellescape}]", :immediately
   action :run
+end
+
+bash "createdb -- #{recipe.original_user.shellescape}" do
+  user "postgres"
+  group "postgres"
+  code <<EOF
+exec -- createdb -- #{recipe.original_user.shellescape}
+EOF
+  action :nothing
 end
 
 link postgresql_data_dir.join("server.crt").to_s do
@@ -114,24 +132,17 @@ link postgresql_data_dir.join("server.key").to_s do
   action :nothing
 end
 
-service "postgresql" do
-  action :nothing
-end
-
-bash "createuser" do
+# Authorize the current user to prevent the "Fatal: role ${USER} does not exist" error.
+bash "createuser --superuser -- #{recipe.original_user.shellescape}" do
   user "postgres"
   group "postgres"
   code <<EOF
 exec -- createuser --superuser -- #{recipe.original_user.shellescape}
 EOF
-  action :nothing
+  returns [0, 1]
+  action :run
 end
 
-bash "createdb" do
-  user "postgres"
-  group "postgres"
-  code <<EOF
-exec -- createdb -- #{recipe.original_user.shellescape}
-EOF
+service "postgresql" do
   action :nothing
 end

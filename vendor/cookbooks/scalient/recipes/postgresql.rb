@@ -50,11 +50,13 @@ EOF
   action :run
 end
 
-directory postgresql_conf_dir.to_s do
-  owner "postgres"
-  group "postgres"
-  mode 0755
-  action :create
+[postgresql_conf_dir.parent, postgresql_conf_dir, postgresql_data_dir.parent].each do |dir|
+  directory dir.to_s do
+    owner "postgres"
+    group "postgres"
+    mode 0755
+    action :create
+  end
 end
 
 directory postgresql_data_dir.to_s do

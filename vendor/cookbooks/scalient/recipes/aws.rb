@@ -8,7 +8,6 @@ class << self
   include Scalient::Util
 end
 
-recipe = self
 hostname = node.name
 domain_name = hostname.split(".", -1)[1...3].join(".")
 

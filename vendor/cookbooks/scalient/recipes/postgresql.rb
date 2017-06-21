@@ -47,6 +47,9 @@ bash "pg_dropcluster --stop -- #{Scalient::PostgreSQL::VERSION} main" do
 exec -- pg_dropcluster --stop -- #{Scalient::PostgreSQL::VERSION} main
 EOF
   returns [0, 1]
+  # Any changes to the clustering setup should be met with a systemd service definition reload.
+  notifies :run, "bash[systemctl -- daemon-reload]", :immediately
+  notifies :restart, "service[postgresql]", :immediately
   action :run
 end
 
@@ -106,9 +109,20 @@ EOF
   only_if {(postgresql_data_dir.entries - [".", ".."].map {|s| Pathname.new (s)}).empty?}
   notifies :create, "link[#{postgresql_data_dir.join("server.crt")}]", :immediately
   notifies :create, "link[#{postgresql_data_dir.join("server.key")}]", :immediately
+  # Any changes to the clustering setup should be met with a systemd service definition reload.
+  notifies :run, "bash[systemctl -- daemon-reload]", :immediately
   notifies :restart, "service[postgresql]", :immediately
   notifies :run, "bash[createdb -- #{recipe.original_user.shellescape}]", :immediately
   action :run
+end
+
+bash "systemctl -- daemon-reload" do
+  user "root"
+  group "root"
+  code <<EOF
+exec -- systemctl -- daemon-reload
+EOF
+  action :nothing
 end
 
 bash "createdb -- #{recipe.original_user.shellescape}" do

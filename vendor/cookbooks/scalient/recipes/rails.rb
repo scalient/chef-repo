@@ -103,6 +103,8 @@ access_key = key_info["access_key"]
 secret_key = key_info["secret_key"]
 region = key_info["region"]
 
+facebook_info = percolator.find("social-facebook", :hostname, hostname)["facebook"]
+
 ssl_info = percolator.find("certificates", :hostname, hostname)
 ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
 ssl_dir = Pathname.new("/etc/ssl/private")
@@ -185,5 +187,17 @@ template app_dir.join("shared", "config", "secrets.yml").to_s do
   group recipe.original_group
   mode 0644
   variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
+  action :create
+end
+
+template app_dir.join("shared", "config", "facebook.yml").to_s do
+  source "facebook.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(
+      id: facebook_info["app_id"],
+      secret: facebook_info["app_secret"]
+  )
   action :create
 end

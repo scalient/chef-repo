@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012-2014 Scalient LLC
+# Copyright 2012-2017 Scalient LLC
 # All rights reserved.
 
 require "pathname"
@@ -97,6 +97,21 @@ if !workstation_info.nil?
       variables(
           id: entity["facebook"]["app_id"],
           secret: entity["facebook"]["app_secret"]
+      )
+      action :create
+    end
+  end
+
+  generate_config_templates("communication-twilio", work_dir) do |entity, config_dir|
+    template config_dir.join("twilio.yml").to_s do
+      source "twilio.yml.erb"
+      owner recipe.original_user
+      group recipe.original_group
+      mode 0644
+      variables(
+          account_sid: entity["twilio"]["account_sid"],
+          auth_token: entity["twilio"]["auth_token"],
+          messaging_service_sid: entity["twilio"]["messaging_service_sid"]
       )
       action :create
     end

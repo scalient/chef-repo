@@ -1,0 +1,6 @@
+---
+:account_sid: <%= @account_sid.dump %>
+:auth_token: <%= @auth_token.dump %>
+<% if @messaging_service_sid %>
+:messaging_service_sid: <%= @messaging_service_sid.dump %>
+<% end %>

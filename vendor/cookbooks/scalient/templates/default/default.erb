@@ -52,6 +52,10 @@ server {
 
         # The application server.
         proxy_pass http://unicorn_app_server;
+
+        # Increase the request timeout.
+        proxy_send_timeout 300;
+        proxy_read_timeout 300;
     }
 
     # Render Rails error pages on 500's.

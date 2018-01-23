@@ -104,13 +104,14 @@ secret_key = key_info["secret_key"]
 region = key_info["region"]
 
 facebook_info = percolator.find("social-facebook", :hostname, hostname)["facebook"]
+twitter_info = percolator.find("social-twitter", :hostname, hostname)["twitter"]
 
 ssl_info = percolator.find("certificates", :hostname, hostname)
 ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
 ssl_dir = Pathname.new("/etc/ssl/private")
 
 # Is there SSL information for this hostname? If so, we need to do more work.
-if !ssl_info.nil?
+if ssl_info
   file ssl_dir.join("chef-#{domain_name}.crt").to_s do
     owner "root"
     group "root"
@@ -136,7 +137,7 @@ template "/etc/nginx/sites-available/default" do
   group "root"
   mode 0644
   variables(app_root: app_dir.join("current", "public").to_s,
-            use_ssl: !ssl_info.nil?,
+            use_ssl: !!ssl_info,
             ssl_dir: ssl_dir.to_s,
             domain_name: domain_name)
   notifies :restart, "service[nginx]", :immediately
@@ -200,4 +201,18 @@ template app_dir.join("shared", "config", "facebook.yml").to_s do
       secret: facebook_info["app_secret"]
   )
   action :create
-end
+end \
+  if facebook_info
+
+template app_dir.join("shared", "config", "twitter.yml").to_s do
+  source "twitter.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(
+      consumer_key: twitter_info["consumer_key"],
+      consumer_secret: twitter_info["consumer_secret"]
+  )
+  action :create
+end \
+  if twitter_info

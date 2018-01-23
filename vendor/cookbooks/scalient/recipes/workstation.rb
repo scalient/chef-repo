@@ -89,17 +89,37 @@ if !workstation_info.nil?
   end
 
   generate_config_templates("social-facebook", work_dir) do |entity, config_dir|
+    facebook_info = entity["facebook"]
+
     template config_dir.join("facebook.yml").to_s do
       source "facebook.yml.erb"
       owner recipe.original_user
       group recipe.original_group
       mode 0644
       variables(
-          id: entity["facebook"]["app_id"],
-          secret: entity["facebook"]["app_secret"]
+          id: facebook_info["app_id"],
+          secret: facebook_info["app_secret"]
       )
       action :create
-    end
+    end \
+      if facebook_info
+  end
+
+  generate_config_templates("social-twitter", work_dir) do |entity, config_dir|
+    twitter_info = entity["twitter"]
+
+    template config_dir.join("twitter.yml").to_s do
+      source "twitter.yml.erb"
+      owner recipe.original_user
+      group recipe.original_group
+      mode 0644
+      variables(
+          consumer_key: twitter_info["consumer_key"],
+          consumer_secret: twitter_info["consumer_secret"]
+      )
+      action :create
+    end \
+      if twitter_info
   end
 
   generate_config_templates("communication-twilio", work_dir) do |entity, config_dir|

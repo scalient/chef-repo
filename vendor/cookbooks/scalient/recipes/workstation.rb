@@ -54,12 +54,15 @@ if !workstation_info.nil?
   end
 
   generate_config_templates("monitoring-airbrake", work_dir) do |entity, config_dir|
+    airbrake_info = entity["airbrake"]
+
     template config_dir.join("airbrake.yml").to_s do
       source "airbrake.yml.erb"
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(api_key: entity["airbrake_api_key"])
+      variables(project_id: airbrake_info["project_id"],
+                project_key: airbrake_info["project_key"])
       action :create
     end
   end

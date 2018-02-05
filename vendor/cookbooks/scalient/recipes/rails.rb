@@ -103,6 +103,7 @@ access_key = key_info["access_key"]
 secret_key = key_info["secret_key"]
 region = key_info["region"]
 
+airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
 facebook_info = percolator.find("social-facebook", :hostname, hostname)["facebook"]
 twitter_info = percolator.find("social-twitter", :hostname, hostname)["twitter"]
 
@@ -158,7 +159,8 @@ template app_dir.join("shared", "config", "airbrake.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(api_key: recipe.percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake_api_key"])
+  variables(project_id: airbrake_info["project_id"],
+            project_key: airbrake_info["project_key"])
   action :create
 end
 

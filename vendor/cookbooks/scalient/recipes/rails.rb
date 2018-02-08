@@ -40,19 +40,8 @@ package "libsqlite3-dev" do
   action :install
 end
 
-package "nodejs" do
+package "libssl-dev" do
   action :install
-end
-
-package "npm" do
-  action :install
-end
-
-link "/usr/bin/node" do
-  to "nodejs"
-  owner "root"
-  group "root"
-  action :create
 end
 
 service "nginx" do

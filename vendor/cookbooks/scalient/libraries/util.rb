@@ -11,15 +11,15 @@ module Scalient
   module Util
     module InstanceMethods
       def original_user
-        original_uid = Process.uid
-        original_uid = ENV["SUDO_UID"].to_i if original_uid == 0 && ENV.include?("SUDO_UID")
-        Etc.getpwuid(original_uid).name
+        @original_user ||= ENV["SUDO_USER"] || Etc.getpwuid.name
       end
 
       def original_group
-        original_gid = Process.gid
-        original_gid = ENV["SUDO_GID"].to_i if original_gid == 0 && ENV.include?("SUDO_GID")
-        Etc.getgrgid(original_gid).name
+        @original_group ||= Etc.getgrgid(Etc.getpwnam(original_user).gid).name
+      end
+
+      def original_user_home
+        @original_user_home ||= Pathname.new(Etc.getpwnam(original_user).dir)
       end
 
       def ruby_interpreter_path

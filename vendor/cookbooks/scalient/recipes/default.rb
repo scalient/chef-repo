@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2012-2014 Scalient LLC
+# Copyright 2012-2018 Scalient LLC
 # All rights reserved.
 
+require "etc"
+require "fileutils"
 require "pathname"
 require "shellwords"
 
@@ -96,4 +98,24 @@ end
 # The `ntpd` service prevents server clock skew.
 package "ntp" do
   action :install
+end
+
+# Remove potentially root-owned `~/.bundle` directories resulting from the `chef_gem` resource, which uses Bundler under
+# the hood.
+ruby_block "remove root-owned ~/.bundle directory" do
+  block do
+    original_user_entity = Etc.getpwnam(recipe.original_user)
+
+    begin
+      dir = recipe.original_user_home + ".bundle"
+      dir_stat = dir.stat
+
+      FileUtils.rm_rf(dir) \
+        if dir_stat.uid != original_user_entity.uid || dir_stat.gid != original_user_entity.gid
+    rescue Errno::ENOENT
+      # Don't do anything if the directory wasn't found.
+    end
+  end
+
+  action :run
 end

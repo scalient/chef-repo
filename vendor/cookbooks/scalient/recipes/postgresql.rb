@@ -109,43 +109,22 @@ EOF
   only_if {(postgresql_data_dir.entries - [".", ".."].map {|s| Pathname.new (s)}).empty?}
   notifies :create, "link[#{postgresql_data_dir.join("server.crt")}]", :immediately
   notifies :create, "link[#{postgresql_data_dir.join("server.key")}]", :immediately
-  # Any changes to the clustering setup should be met with a systemd service definition reload.
-  notifies :run, "bash[systemctl -- daemon-reload]", :immediately
-  notifies :restart, "service[postgresql]", :immediately
-  notifies :run, "bash[createdb -- #{recipe.original_user.shellescape}]", :immediately
   action :run
 end
 
+# At this point a cluster should've been created, or an existing one has been detected.
 bash "systemctl -- daemon-reload" do
   user "root"
   group "root"
   code <<EOF
 exec -- systemctl -- daemon-reload
 EOF
-  action :nothing
+  action :run
 end
 
-bash "createdb -- #{recipe.original_user.shellescape}" do
-  user "postgres"
-  group "postgres"
-  code <<EOF
-exec -- createdb -- #{recipe.original_user.shellescape}
-EOF
-  action :nothing
-end
-
-link postgresql_data_dir.join("server.crt").to_s do
-  to "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-  owner "postgres"
-  group "postgres"
-  action :nothing
-end
-
-link postgresql_data_dir.join("server.key").to_s do
-  to "/etc/ssl/private/ssl-cert-snakeoil.key"
-  owner "postgres"
-  group "postgres"
-  action :nothing
+# Configuration should be complete at this point; restart the Postgres service.
+service "postgresql" do
+  action :restart
 end
 
 # Authorize the current user to prevent the "Fatal: role ${USER} does not exist" error.
@@ -159,6 +138,27 @@ EOF
   action :run
 end
 
-service "postgresql" do
+# Create the database.
+bash "createdb -- #{recipe.original_user.shellescape}" do
+  user "postgres"
+  group "postgres"
+  code <<EOF
+exec -- createdb -- #{recipe.original_user.shellescape}
+EOF
+  returns [0, 1]
+  action :run
+end
+
+link postgresql_data_dir.join("server.crt").to_s do
+  to "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+  owner "postgres"
+  group "postgres"
+  action :nothing
+end
+
+link postgresql_data_dir.join("server.key").to_s do
+  to "/etc/ssl/private/ssl-cert-snakeoil.key"
+  owner "postgres"
+  group "postgres"
   action :nothing
 end

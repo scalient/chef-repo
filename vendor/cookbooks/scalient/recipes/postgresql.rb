@@ -7,14 +7,20 @@ require "pathname"
 require "shellwords"
 
 class << self
+  include Percolate
   include Scalient::Util
 end
 
 recipe = self
 cluster = node.name.split(".", -1)[1]
+hostname = node.name
+domain_name = hostname.split(".", -1)[1...3].join(".")
 postgresql_conf_dir = Pathname.new("/etc/postgresql").join(Scalient::PostgreSQL::VERSION, cluster)
 postgresql_data_dir = Pathname.new("/var/lib/postgresql").join(Scalient::PostgreSQL::VERSION, cluster)
 postgresql_bin_dir = Pathname.new("/usr/lib/postgresql").join(Scalient::PostgreSQL::VERSION, "bin")
+postgresql_info = percolator.find("database-postgresql", :hostname, hostname)["postgresql"]
+ssl_info = percolator.find("certificates", :hostname, hostname)
+ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
 
 template "/etc/sysctl.conf" do
   source "sysctl.conf.erb"
@@ -82,12 +88,13 @@ template postgresql_conf_dir.join("postgresql.conf").to_s do
   action :create
 end
 
-cookbook_file postgresql_conf_dir.join("pg_hba.conf").to_s do
-  source "pg_hba.conf"
+template postgresql_conf_dir.join("pg_hba.conf").to_s do
+  source "pg_hba.conf.erb"
   owner "postgres"
   group "postgres"
   mode 0640
   notifies :restart, "service[postgresql]", :immediately
+  variables(users: (postgresql_info || {})["users"] || [])
   action :create
 end
 
@@ -107,8 +114,6 @@ bash "#{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data
 exec -- #{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data_dir.to_s.shellescape} -E UTF8
 EOF
   only_if {(postgresql_data_dir.entries - [".", ".."].map {|s| Pathname.new (s)}).empty?}
-  notifies :create, "link[#{postgresql_data_dir.join("server.crt")}]", :immediately
-  notifies :create, "link[#{postgresql_data_dir.join("server.key")}]", :immediately
   action :run
 end
 
@@ -149,16 +154,41 @@ EOF
   action :run
 end
 
-link postgresql_data_dir.join("server.crt").to_s do
-  to "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-  owner "postgres"
-  group "postgres"
-  action :nothing
-end
+# Is there SSL information for this hostname? If so, we need to do more work.
+if ssl_info
+  file postgresql_data_dir.join("server.crt").to_s do
+    owner "postgres"
+    group "postgres"
+    mode 0600
+    content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
+    sensitive true
+    notifies :restart, "service[postgresql]", :immediately
+    action :create
+  end
 
-link postgresql_data_dir.join("server.key").to_s do
-  to "/etc/ssl/private/ssl-cert-snakeoil.key"
-  owner "postgres"
-  group "postgres"
-  action :nothing
+  file postgresql_data_dir.join("server.key").to_s do
+    owner "postgres"
+    group "postgres"
+    mode 0600
+    content ssl_info["key"].join("\n") + "\n"
+    sensitive true
+    notifies :restart, "service[postgresql]", :immediately
+    action :create
+  end
+else
+  link postgresql_data_dir.join("server.crt").to_s do
+    to "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+    owner "postgres"
+    group "postgres"
+    notifies :restart, "service[postgresql]", :immediately
+    action :create
+  end
+
+  link postgresql_data_dir.join("server.key").to_s do
+    to "/etc/ssl/private/ssl-cert-snakeoil.key"
+    owner "postgres"
+    group "postgres"
+    notifies :restart, "service[postgresql]", :immediately
+    action :create
+  end
 end

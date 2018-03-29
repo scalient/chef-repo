@@ -24,6 +24,7 @@ external_pid_file = '<%= escaped_prefix %>/var/run/postgresql/<%= escaped_versio
 # - Connection Settings -
 
 port = 5432
+listen_addresses = '*'
 max_connections = 100
 unix_socket_directories = '<%= escaped_prefix %>/var/run/postgresql'
 

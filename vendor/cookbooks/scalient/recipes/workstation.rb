@@ -139,4 +139,17 @@ if !workstation_info.nil?
       action :create
     end
   end
+
+  generate_config_templates("rails-deploy", work_dir) do |entity, config_dir|
+    template config_dir.join("deploy.yml").to_s do
+      source "deploy.yml.erb"
+      owner recipe.original_user
+      group recipe.original_group
+      mode 0644
+      variables(
+          scope: entity["deploy_scope"] || ""
+      )
+      action :create
+    end
+  end
 end

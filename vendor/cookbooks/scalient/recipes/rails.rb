@@ -95,6 +95,7 @@ region = key_info["region"]
 airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
 facebook_info = percolator.find("social-facebook", :hostname, hostname)["facebook"]
 twitter_info = percolator.find("social-twitter", :hostname, hostname)["twitter"]
+deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
 
 ssl_info = percolator.find("certificates", :hostname, hostname)
 ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
@@ -207,3 +208,14 @@ template app_dir.join("shared", "config", "twitter.yml").to_s do
   action :create
 end \
   if twitter_info
+
+template app_dir.join("shared", "config", "deploy.yml").to_s do
+  source "deploy.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(
+      scope: deploy_scope || ""
+  )
+  action :create
+end

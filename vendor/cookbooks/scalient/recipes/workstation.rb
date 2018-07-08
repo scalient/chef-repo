@@ -91,23 +91,6 @@ if !workstation_info.nil?
     end
   end
 
-  generate_config_templates("social-facebook", work_dir) do |entity, config_dir|
-    facebook_info = entity["facebook"]
-
-    template config_dir.join("facebook.yml").to_s do
-      source "facebook.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(
-          id: facebook_info["app_id"],
-          secret: facebook_info["app_secret"]
-      )
-      action :create
-    end \
-      if facebook_info
-  end
-
   generate_config_templates("social-twitter", work_dir) do |entity, config_dir|
     twitter_info = entity["twitter"]
 

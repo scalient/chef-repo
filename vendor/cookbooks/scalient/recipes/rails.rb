@@ -183,19 +183,6 @@ template app_dir.join("shared", "config", "secrets.yml").to_s do
   action :create
 end
 
-template app_dir.join("shared", "config", "facebook.yml").to_s do
-  source "facebook.yml.erb"
-  owner recipe.original_user
-  group recipe.original_group
-  mode 0644
-  variables(
-      id: facebook_info["app_id"],
-      secret: facebook_info["app_secret"]
-  )
-  action :create
-end \
-  if facebook_info
-
 template app_dir.join("shared", "config", "twitter.yml").to_s do
   source "twitter.yml.erb"
   owner recipe.original_user

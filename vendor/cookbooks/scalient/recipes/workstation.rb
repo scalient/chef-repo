@@ -91,23 +91,6 @@ if !workstation_info.nil?
     end
   end
 
-  generate_config_templates("social-twitter", work_dir) do |entity, config_dir|
-    twitter_info = entity["twitter"]
-
-    template config_dir.join("twitter.yml").to_s do
-      source "twitter.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(
-          consumer_key: twitter_info["consumer_key"],
-          consumer_secret: twitter_info["consumer_secret"]
-      )
-      action :create
-    end \
-      if twitter_info
-  end
-
   generate_config_templates("communication-twilio", work_dir) do |entity, config_dir|
     template config_dir.join("twilio.yml").to_s do
       source "twilio.yml.erb"

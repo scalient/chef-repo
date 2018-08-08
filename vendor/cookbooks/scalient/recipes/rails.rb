@@ -93,8 +93,6 @@ secret_key = key_info["secret_key"]
 region = key_info["region"]
 
 airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
-facebook_info = percolator.find("social-facebook", :hostname, hostname)["facebook"]
-twitter_info = percolator.find("social-twitter", :hostname, hostname)["twitter"]
 deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
 
 ssl_info = percolator.find("certificates", :hostname, hostname)
@@ -182,19 +180,6 @@ template app_dir.join("shared", "config", "secrets.yml").to_s do
   variables(rails_secret_key: recipe.percolator.find("rails-secret_key", :hostname, hostname)["rails_secret_key"])
   action :create
 end
-
-template app_dir.join("shared", "config", "twitter.yml").to_s do
-  source "twitter.yml.erb"
-  owner recipe.original_user
-  group recipe.original_group
-  mode 0644
-  variables(
-      consumer_key: twitter_info["consumer_key"],
-      consumer_secret: twitter_info["consumer_secret"]
-  )
-  action :create
-end \
-  if twitter_info
 
 template app_dir.join("shared", "config", "deploy.yml").to_s do
   source "deploy.yml.erb"

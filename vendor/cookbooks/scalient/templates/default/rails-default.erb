@@ -13,17 +13,18 @@ upstream unicorn_app_server {
     server localhost:8080 fail_timeout=0;
 }
 
+<% @hostname_domain_names.each do |hostname, domain_name| %>
 server {
-    server_name <%= node.name.dump %>;
+    server_name <%= hostname.dump %>;
     root <%= @app_root.dump %>;
 
-    listen 80 default deferred;
+    listen 80;
 
     <% if @use_ssl %>
-    listen 443 ssl deferred;
+    listen 443 ssl;
 
-    ssl_certificate         <%= Pathname.new(@ssl_dir).join("chef-#{@domain_name}.crt").to_s.dump %>;
-    ssl_certificate_key     <%= Pathname.new(@ssl_dir).join("chef-#{@domain_name}.key").to_s.dump %>;
+    ssl_certificate         <%= Pathname.new(@ssl_dir).join("chef-#{domain_name}.crt").to_s.dump %>;
+    ssl_certificate_key     <%= Pathname.new(@ssl_dir).join("chef-#{domain_name}.key").to_s.dump %>;
     <% end %>
 
     # Reject unreasonably large request bodies.
@@ -65,3 +66,5 @@ server {
         root <%= @app_root.dump %>;
     }
 }
+
+<% end %>

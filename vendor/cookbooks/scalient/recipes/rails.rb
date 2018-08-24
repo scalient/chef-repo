@@ -13,8 +13,16 @@ end
 recipe = self
 user_home = Dir.home(recipe.original_user)
 hostname = node.name
-domain_name = hostname.split(".", -1)[1...3].join(".")
+hostname_components = hostname.split(".", -1)
+machine_name = hostname_components[0]
+domain_name = hostname_components[1...3].join(".")
 app_dir = Pathname.new("apps").join(hostname.split(".", -1)[1]).expand_path(user_home)
+
+route53_info = percolator.find("dns-aws", :hostname, hostname)["aws-route53"]
+
+hostname_domain_names = ([domain_name] + (route53_info[domain_name]["alternates"] || [])).map do |domain_name|
+  ["#{machine_name}.#{domain_name}", domain_name]
+end
 
 chef_gem "install `percolate` for #{recipe_name}" do
   package_name "percolate"
@@ -95,40 +103,41 @@ region = key_info["region"]
 airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
 deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
 
-ssl_info = percolator.find("certificates", :hostname, hostname)
-ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
+domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)["ssl"]
 ssl_dir = Pathname.new("/etc/ssl/private")
 
 # Is there SSL information for this hostname? If so, we need to do more work.
-if ssl_info
-  file ssl_dir.join("chef-#{domain_name}.crt").to_s do
-    owner "root"
-    group "root"
-    mode 0640
-    content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
-    sensitive true
-    action :create
-  end
+if domain_name_ssl_infos
+  domain_name_ssl_infos.each do |domain_name, ssl_info|
+    file ssl_dir.join("chef-#{domain_name}.crt").to_s do
+      owner "root"
+      group "root"
+      mode 0640
+      content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
+      sensitive true
+      action :create
+    end
 
-  file ssl_dir.join("chef-#{domain_name}.key").to_s do
-    owner "root"
-    group "root"
-    mode 0640
-    content ssl_info["key"].join("\n") + "\n"
-    sensitive true
-    action :create
+    file ssl_dir.join("chef-#{domain_name}.key").to_s do
+      owner "root"
+      group "root"
+      mode 0640
+      content ssl_info["key"].join("\n") + "\n"
+      sensitive true
+      action :create
+    end
   end
 end
 
 template "/etc/nginx/sites-available/default" do
-  source "default.erb"
+  source "rails-default.erb"
   owner "root"
   group "root"
   mode 0644
   variables(app_root: app_dir.join("current", "public").to_s,
-            use_ssl: !!ssl_info,
+            use_ssl: !!domain_name_ssl_infos,
             ssl_dir: ssl_dir.to_s,
-            domain_name: domain_name)
+            hostname_domain_names: hostname_domain_names)
   notifies :restart, "service[nginx]", :immediately
   action :create
 end

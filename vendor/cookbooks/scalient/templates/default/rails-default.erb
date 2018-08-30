@@ -20,7 +20,7 @@ server {
 
     listen 80;
 
-    <% if @use_ssl %>
+    <% if @domain_ssl_infos[domain_name] %>
     listen 443 ssl;
 
     ssl_certificate         <%= Pathname.new(@ssl_dir).join("chef-#{domain_name}.crt").to_s.dump %>;

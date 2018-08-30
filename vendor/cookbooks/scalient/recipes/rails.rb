@@ -103,29 +103,27 @@ region = key_info["region"]
 airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
 deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
 
-domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)["ssl"]
+domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)["ssl"] || {}
 ssl_dir = Pathname.new("/etc/ssl/private")
 
 # Is there SSL information for this hostname? If so, we need to do more work.
-if domain_name_ssl_infos
-  domain_name_ssl_infos.each do |domain_name, ssl_info|
-    file ssl_dir.join("chef-#{domain_name}.crt").to_s do
-      owner "root"
-      group "root"
-      mode 0640
-      content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
-      sensitive true
-      action :create
-    end
+domain_name_ssl_infos.each do |domain_name, ssl_info|
+  file ssl_dir.join("chef-#{domain_name}.crt").to_s do
+    owner "root"
+    group "root"
+    mode 0640
+    content (ssl_info["certificate"] + ssl_info["ca_certificate"]).join("\n") + "\n"
+    sensitive true
+    action :create
+  end
 
-    file ssl_dir.join("chef-#{domain_name}.key").to_s do
-      owner "root"
-      group "root"
-      mode 0640
-      content ssl_info["key"].join("\n") + "\n"
-      sensitive true
-      action :create
-    end
+  file ssl_dir.join("chef-#{domain_name}.key").to_s do
+    owner "root"
+    group "root"
+    mode 0640
+    content ssl_info["key"].join("\n") + "\n"
+    sensitive true
+    action :create
   end
 end
 
@@ -135,8 +133,8 @@ template "/etc/nginx/sites-available/default" do
   group "root"
   mode 0644
   variables(app_root: app_dir.join("current", "public").to_s,
-            use_ssl: !!domain_name_ssl_infos,
             ssl_dir: ssl_dir.to_s,
+            domain_ssl_infos: domain_name_ssl_infos,
             hostname_domain_names: hostname_domain_names)
   notifies :restart, "service[nginx]", :immediately
   action :create

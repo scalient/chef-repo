@@ -95,6 +95,10 @@ nodejs_npm "bower" do
   action :install
 end
 
+nodejs_npm "yarn" do
+  action :install
+end
+
 key_info = percolator.find("keys-aws", :hostname, hostname)["aws"]
 access_key = key_info["access_key"]
 secret_key = key_info["secret_key"]
@@ -194,7 +198,18 @@ template app_dir.join("shared", "config", "deploy.yml").to_s do
   group recipe.original_group
   mode 0644
   variables(
-      scope: deploy_scope || ""
+      scope: deploy_scope || "default"
+  )
+  action :create
+end
+
+template app_dir.join("shared", "config", "webpacker.yml").to_s do
+  source "webpacker.yml.erb"
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  variables(
+      public_output_path: (deploy_scope && (Pathname.new("assets") + deploy_scope + "packs")).to_s || "packs"
   )
   action :create
 end

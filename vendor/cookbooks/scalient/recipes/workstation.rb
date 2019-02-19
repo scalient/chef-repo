@@ -107,13 +107,26 @@ if !workstation_info.nil?
   end
 
   generate_config_templates("rails-deploy", work_dir) do |entity, config_dir|
+    deploy_scope = entity["deploy_scope"]
+
     template config_dir.join("deploy.yml").to_s do
       source "deploy.yml.erb"
       owner recipe.original_user
       group recipe.original_group
       mode 0644
       variables(
-          scope: entity["deploy_scope"] || ""
+          scope: deploy_scope || "default"
+      )
+      action :create
+    end
+
+    template config_dir.join("webpacker.yml").to_s do
+      source "webpacker.yml.erb"
+      owner recipe.original_user
+      group recipe.original_group
+      mode 0644
+      variables(
+          public_output_path: (deploy_scope && (Pathname.new("assets") + deploy_scope + "packs").to_s) || "packs"
       )
       action :create
     end

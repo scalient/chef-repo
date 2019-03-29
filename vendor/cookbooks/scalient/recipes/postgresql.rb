@@ -15,12 +15,11 @@ recipe = self
 cluster = node.name.split(".", -1)[1]
 hostname = node.name
 domain_name = hostname.split(".", -1)[1...3].join(".")
+
 postgresql_conf_dir = Pathname.new("/etc/postgresql").join(Scalient::PostgreSQL::VERSION, cluster)
 postgresql_data_dir = Pathname.new("/var/lib/postgresql").join(Scalient::PostgreSQL::VERSION, cluster)
 postgresql_bin_dir = Pathname.new("/usr/lib/postgresql").join(Scalient::PostgreSQL::VERSION, "bin")
 postgresql_info = percolator.find("database-postgresql", :hostname, hostname)["postgresql"]
-ssl_info = percolator.find("certificates", :hostname, hostname)
-ssl_info &&= ssl_info["ssl"] && ssl_info["ssl"][domain_name]
 
 template "/etc/sysctl.conf" do
   source "sysctl.conf.erb"
@@ -80,10 +79,12 @@ template postgresql_conf_dir.join("postgresql.conf").to_s do
   owner "postgres"
   group "postgres"
   mode 0644
-  variables(cluster: cluster,
-            prefix: Scalient::PREFIX,
-            version: Scalient::PostgreSQL::VERSION,
-            cache_size: Scalient::PostgreSQL::CACHE_SIZE)
+  variables(
+      cluster: cluster,
+      prefix: Scalient::PREFIX,
+      version: Scalient::PostgreSQL::VERSION,
+      cache_size: Scalient::PostgreSQL::CACHE_SIZE
+  )
   notifies :restart, "service[postgresql]", :immediately
   action :create
 end
@@ -113,7 +114,7 @@ bash "#{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data
   code <<EOF
 exec -- #{postgresql_bin_dir.join("initdb").to_s.shellescape} -D #{postgresql_data_dir.to_s.shellescape} -E UTF8
 EOF
-  only_if {(postgresql_data_dir.entries - [".", ".."].map {|s| Pathname.new (s)}).empty?}
+  only_if { (postgresql_data_dir.entries - [".", ".."].map { |s| Pathname.new (s) }).empty? }
   action :run
 end
 
@@ -155,7 +156,7 @@ EOF
 end
 
 # Is there SSL information for this hostname? If so, we need to do more work.
-if ssl_info
+if ssl_info = percolator.find("certificates", :hostname, hostname)&.dig("ssl", domain_name)
   file postgresql_data_dir.join("server.crt").to_s do
     owner "postgres"
     group "postgres"

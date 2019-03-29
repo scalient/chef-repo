@@ -61,9 +61,11 @@ template "/lib/systemd/system/unicorn.service" do
   owner "root"
   group "root"
   mode 0644
-  variables(rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
-            app_root: app_dir.join("current").to_s,
-            original_user: recipe.original_user)
+  variables(
+      rbenv_version: Pathname.new("../..").expand_path(recipe.ruby_interpreter_path).basename.to_s,
+      app_root: app_dir.join("current").to_s,
+      original_user: recipe.original_user
+  )
   notifies :create, "link[/etc/systemd/system/multi-user.target.wants/unicorn.service]", :immediately
   action :create
 end
@@ -75,14 +77,16 @@ link "/etc/systemd/system/multi-user.target.wants/unicorn.service" do
   action :nothing
 end
 
-[app_dir.parent,
- app_dir,
- app_dir.join("releases"),
- app_dir.join("shared"),
- app_dir.join("shared", "config"),
- app_dir.join("shared", "log"),
- app_dir.join("shared", "pids"),
- app_dir.join("shared", "system")].each do |dir|
+[
+    app_dir.parent,
+    app_dir,
+    app_dir.join("releases"),
+    app_dir.join("shared"),
+    app_dir.join("shared", "config"),
+    app_dir.join("shared", "log"),
+    app_dir.join("shared", "pids"),
+    app_dir.join("shared", "system")
+].each do |dir|
   directory dir.to_s do
     owner recipe.original_user
     group recipe.original_group
@@ -104,10 +108,9 @@ access_key = key_info["access_key"]
 secret_key = key_info["secret_key"]
 region = key_info["region"]
 
-airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)["airbrake"]
 deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
 
-domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)["ssl"] || {}
+domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)&.dig("ssl") || {}
 ssl_dir = Pathname.new("/etc/ssl/private")
 
 # Is there SSL information for this hostname? If so, we need to do more work.
@@ -136,10 +139,12 @@ template "/etc/nginx/sites-available/default" do
   owner "root"
   group "root"
   mode 0644
-  variables(app_root: app_dir.join("current", "public").to_s,
-            ssl_dir: ssl_dir.to_s,
-            domain_ssl_infos: domain_name_ssl_infos,
-            hostname_domain_names: hostname_domain_names)
+  variables(
+      app_root: app_dir.join("current", "public").to_s,
+      ssl_dir: ssl_dir.to_s,
+      domain_ssl_infos: domain_name_ssl_infos,
+      hostname_domain_names: hostname_domain_names
+  )
   notifies :restart, "service[nginx]", :immediately
   action :create
 end
@@ -153,14 +158,18 @@ template app_dir.join("shared", "config", "action_mailer.yml").to_s do
   action :create
 end
 
-template app_dir.join("shared", "config", "airbrake.yml").to_s do
-  source "airbrake.yml.erb"
-  owner recipe.original_user
-  group recipe.original_group
-  mode 0644
-  variables(project_id: airbrake_info["project_id"],
-            project_key: airbrake_info["project_key"])
-  action :create
+if airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)&.dig("airbrake")
+  template app_dir.join("shared", "config", "airbrake.yml").to_s do
+    source "airbrake.yml.erb"
+    owner recipe.original_user
+    group recipe.original_group
+    mode 0644
+    variables(
+        project_id: airbrake_info["project_id"],
+        project_key: airbrake_info["project_key"]
+    )
+    action :create
+  end
 end
 
 template app_dir.join("shared", "config", "aws.yml").to_s do
@@ -168,19 +177,23 @@ template app_dir.join("shared", "config", "aws.yml").to_s do
   owner recipe.original_user
   group recipe.original_group
   mode 0644
-  variables(access_key: access_key,
-            secret_key: secret_key,
-            region: region)
+  variables(
+      access_key: access_key,
+      secret_key: secret_key,
+      region: region
+  )
   action :create
 end
 
-template app_dir.join("shared", "config", "google_analytics.yml").to_s do
-  source "google_analytics.yml.erb"
-  owner recipe.original_user
-  group recipe.original_group
-  mode 0644
-  variables(id: recipe.percolator.find("analytics-google", :hostname, hostname)["google_analytics_id"])
-  action :create
+if google_analytics_id = percolator.find("analytics-google", :hostname, hostname)&.dig("google_analytics_id")
+  template app_dir.join("shared", "config", "google_analytics.yml").to_s do
+    source "google_analytics.yml.erb"
+    owner recipe.original_user
+    group recipe.original_group
+    mode 0644
+    variables(id: google_analytics_id)
+    action :create
+  end
 end
 
 template app_dir.join("shared", "config", "secrets.yml").to_s do

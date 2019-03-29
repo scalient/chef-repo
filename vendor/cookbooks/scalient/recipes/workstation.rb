@@ -54,27 +54,31 @@ if !workstation_info.nil?
   end
 
   generate_config_templates("monitoring-airbrake", work_dir) do |entity, config_dir|
-    airbrake_info = entity["airbrake"]
-
-    template config_dir.join("airbrake.yml").to_s do
-      source "airbrake.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(project_id: airbrake_info["project_id"],
-                project_key: airbrake_info["project_key"])
-      action :create
+    if airbrake_info = entity["airbrake"]
+      template config_dir.join("airbrake.yml").to_s do
+        source "airbrake.yml.erb"
+        owner recipe.original_user
+        group recipe.original_group
+        mode 0644
+        variables(
+            project_id: airbrake_info["project_id"],
+            project_key: airbrake_info["project_key"]
+        )
+        action :create
+      end
     end
   end
 
   generate_config_templates("analytics-google", work_dir) do |entity, config_dir|
-    template config_dir.join("google_analytics.yml").to_s do
-      source "google_analytics.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(id: entity["google_analytics_id"])
-      action :create
+    if google_analytics_id = entity["google_analytics_id"]
+      template config_dir.join("google_analytics.yml").to_s do
+        source "google_analytics.yml.erb"
+        owner recipe.original_user
+        group recipe.original_group
+        mode 0644
+        variables(id: google_analytics_id)
+        action :create
+      end
     end
   end
 
@@ -84,25 +88,29 @@ if !workstation_info.nil?
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(access_key: entity["aws"]["access_key"],
-                secret_key: entity["aws"]["secret_key"],
-                region: entity["aws"]["region"])
+      variables(
+          access_key: entity["aws"]["access_key"],
+          secret_key: entity["aws"]["secret_key"],
+          region: entity["aws"]["region"]
+      )
       action :create
     end
   end
 
   generate_config_templates("communication-twilio", work_dir) do |entity, config_dir|
-    template config_dir.join("twilio.yml").to_s do
-      source "twilio.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(
-          account_sid: entity["twilio"]["account_sid"],
-          auth_token: entity["twilio"]["auth_token"],
-          messaging_service_sid: entity["twilio"]["messaging_service_sid"]
-      )
-      action :create
+    if twilio_info = entity["twilio"]
+      template config_dir.join("twilio.yml").to_s do
+        source "twilio.yml.erb"
+        owner recipe.original_user
+        group recipe.original_group
+        mode 0644
+        variables(
+            account_sid: twilio_info["account_sid"],
+            auth_token: twilio_info["auth_token"],
+            messaging_service_sid: twilio_info["messaging_service_sid"]
+        )
+        action :create
+      end
     end
   end
 

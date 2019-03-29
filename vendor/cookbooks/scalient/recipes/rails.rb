@@ -56,6 +56,14 @@ service "nginx" do
   action :nothing
 end
 
+package "nodejs" do
+  action :install
+end
+
+package "npm" do
+  action :install
+end
+
 template "/lib/systemd/system/unicorn.service" do
   source "unicorn.service.erb"
   owner "root"
@@ -95,11 +103,11 @@ end
   end
 end
 
-nodejs_npm "bower" do
+npm_package "bower" do
   action :install
 end
 
-nodejs_npm "yarn" do
+npm_package "yarn" do
   action :install
 end
 

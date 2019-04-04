@@ -93,7 +93,9 @@ end
     app_dir.join("shared", "config"),
     app_dir.join("shared", "log"),
     app_dir.join("shared", "pids"),
-    app_dir.join("shared", "system")
+    app_dir.join("shared", "system"),
+    app_dir.join("shared", "public"),
+    app_dir.join("shared", "public", "assets")
 ].each do |dir|
   directory dir.to_s do
     owner recipe.original_user
@@ -233,4 +235,13 @@ template app_dir.join("shared", "config", "webpacker.yml").to_s do
       public_output_path: (deploy_scope && (Pathname.new("assets") + deploy_scope + "packs")).to_s || "packs"
   )
   action :create
+end
+
+# Since we no longer compile assets to `public/assets`, touch this magical file to help ensure that the Capistrano
+# deployment goes through.
+file app_dir.join("shared", "public", "assets", ".sprockets-manifest.json").to_s do
+  owner recipe.original_user
+  group recipe.original_group
+  mode 0644
+  action :create_if_missing
 end

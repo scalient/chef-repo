@@ -10,6 +10,20 @@ class << self
   include Scalient::Util
 end
 
+chef_gem "install `fog-aws` for #{recipe_name}" do
+  package_name "fog-aws"
+  compile_time true
+  action :install
+end
+
+chef_gem "install `percolate` for #{recipe_name}" do
+  package_name "percolate"
+  compile_time true
+  action :install
+end
+
+require "fog/aws"
+
 recipe = self
 user_home = Dir.home(recipe.original_user)
 hostname = node.name
@@ -22,12 +36,6 @@ route53_info = percolator.find("dns-aws", :hostname, hostname)["aws-route53"]
 
 hostname_domain_names = ([domain_name] + (route53_info[domain_name]["alternates"] || [])).map do |domain_name|
   ["#{machine_name}.#{domain_name}", domain_name]
-end
-
-chef_gem "install `percolate` for #{recipe_name}" do
-  package_name "percolate"
-  compile_time true
-  action :install
 end
 
 chef_gem "install `bundler` for #{recipe_name}" do
@@ -119,6 +127,28 @@ secret_key = key_info["secret_key"]
 region = key_info["region"]
 
 deploy_scope = percolator.find("rails-deploy", :hostname, hostname)["deploy_scope"]
+
+elb_client = Fog::AWS::ELB.new(
+    aws_access_key_id: access_key, aws_secret_access_key: secret_key,
+    # Important: This queries against ELBv2, aka our ALBs.
+    version: "2015-12-01"
+)
+
+begin
+  arn = elb_client.describe_load_balancers(Fog::AWS.indexed_param("Names.member", [deploy_scope])).
+      body["DescribeLoadBalancersResult"]["LoadBalancerDescriptions"][0]["LoadBalancerArn"]
+
+  # The load balancer tags serve as meta information that inform application servers.
+  # TODO: Ugh, use fog-aws' private API because ELBv2 isn't well-supported.
+  load_balancer_meta = elb_client.send(:request, {
+      "Action" => "DescribeTags",
+      parser: Fog::Parsers::AWS::ELB::TagListParser.new
+  }.
+      merge(Fog::AWS.indexed_param("ResourceArns.member", [arn]))).
+      body["DescribeTagsResult"]["LoadBalancers"][0]["Tags"]
+rescue Fog::AWS::ELB::NotFound => e
+  load_balancer_meta = {}
+end
 
 domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)&.dig("ssl") || {}
 ssl_dir = Pathname.new("/etc/ssl/private")
@@ -221,7 +251,8 @@ template app_dir.join("shared", "config", "deploy.yml").to_s do
   group recipe.original_group
   mode 0644
   variables(
-      scope: deploy_scope || "default"
+      scope: deploy_scope || "default",
+      load_balancer_meta: load_balancer_meta
   )
   action :create
 end

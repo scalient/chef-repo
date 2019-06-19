@@ -146,7 +146,7 @@ begin
   }.
       merge(Fog::AWS.indexed_param("ResourceArns.member", [arn]))).
       body["DescribeTagsResult"]["LoadBalancers"][0]["Tags"]
-rescue Fog::AWS::ELB::NotFound => e
+rescue Fog::AWS::ELB::NotFound
   load_balancer_meta = {}
 end
 

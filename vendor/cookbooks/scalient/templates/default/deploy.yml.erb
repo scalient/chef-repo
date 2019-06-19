@@ -12,4 +12,6 @@
 
 scope: <%= @scope.dump %>
 
-<%= @load_balancer_meta.to_yaml %>
+<% if @load_balancer_meta && @load_balancer_meta.size > 0 %>
+<%= @load_balancer_meta.to_yaml.delete_prefix("---\n") %>
+<% end %>

@@ -257,17 +257,6 @@ template app_dir.join("shared", "config", "deploy.yml").to_s do
   action :create
 end
 
-template app_dir.join("shared", "config", "webpacker.yml").to_s do
-  source "webpacker.yml.erb"
-  owner recipe.original_user
-  group recipe.original_group
-  mode 0644
-  variables(
-      public_output_path: (deploy_scope && (Pathname.new("assets") + deploy_scope + "packs")).to_s || "packs"
-  )
-  action :create
-end
-
 # Since we no longer compile assets to `public/assets`, touch this magical file to help ensure that the Capistrano
 # deployment goes through.
 file app_dir.join("shared", "public", "assets", ".sprockets-manifest.json").to_s do

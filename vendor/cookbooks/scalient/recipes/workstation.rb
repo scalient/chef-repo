@@ -127,16 +127,5 @@ if !workstation_info.nil?
       )
       action :create
     end
-
-    template config_dir.join("webpacker.yml").to_s do
-      source "webpacker.yml.erb"
-      owner recipe.original_user
-      group recipe.original_group
-      mode 0644
-      variables(
-          public_output_path: (deploy_scope && (Pathname.new("assets") + deploy_scope + "packs").to_s) || "packs"
-      )
-      action :create
-    end
   end
 end

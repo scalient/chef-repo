@@ -64,11 +64,14 @@ service "nginx" do
   action :nothing
 end
 
-package "nodejs" do
-  action :install
+apt_repository "nodesource" do
+  uri "https://deb.nodesource.com/node_13.x"
+  components ["main"]
+  key "68576280"
+  action :add
 end
 
-package "npm" do
+package "nodejs" do
   action :install
 end
 

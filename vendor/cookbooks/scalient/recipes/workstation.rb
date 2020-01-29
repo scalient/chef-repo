@@ -14,7 +14,7 @@ recipe = self
 user_home = Dir.home(recipe.original_user)
 
 def generate_config_templates(data_bag_name, work_dir)
-  percolator.find_facet(data_bag_name, :project_directory).fixtures.each_key do |dir_name|
+  (percolator.find_facet(data_bag_name, :project_directory)&.fixtures || {}).each_key do |dir_name|
     config_dir = work_dir.join(dir_name, "config")
     yield percolator.find(data_bag_name, :project_directory, dir_name), config_dir if config_dir.directory?
   end

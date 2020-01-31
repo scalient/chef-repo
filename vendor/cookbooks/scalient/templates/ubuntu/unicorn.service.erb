@@ -17,9 +17,8 @@ Requires=postgresql.service
 Type=simple
 WorkingDirectory=<%= @app_root.shellescape %>
 Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
-ExecStart=/usr/bin/sudo -u <%= @original_user.shellescape %> -- rbenv exec bundle exec unicorn_rails \
-    -E production \
-    -c config/unicorn.rb
+User=<%= @original_user.shellescape %>
+ExecStart=/usr/bin/rbenv exec bundle exec unicorn_rails -E production -c config/unicorn.rb
 
 [Install]
 WantedBy=multi-user.target

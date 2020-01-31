@@ -10,16 +10,13 @@
 #
 
 [Unit]
-Description=Sidekiq uses threads to handle many jobs at the same time in the same process. It does not require Rails \
-    but will integrate tightly with Rails 3/4 to make background processing dead simple.
-Requires=postgresql.service
+Description=The Chrome headless browser is used to render (and print) web pages in a consistent manner
 
 [Service]
 Type=simple
 WorkingDirectory=<%= @app_root.shellescape %>
-Environment=RBENV_VERSION=<%= @rbenv_version.shellescape %>
 User=<%= @original_user.shellescape %>
-ExecStart=/usr/bin/rbenv exec bundle exec sidekiq -e production
+ExecStart=/usr/bin/chromium-browser --headless --remote-debugging-port=9222 https://chromium.org/
 
 [Install]
 WantedBy=multi-user.target

@@ -75,6 +75,10 @@ package "nodejs" do
   action :install
 end
 
+package "chromium-browser" do
+  action :install
+end
+
 template "/lib/systemd/system/unicorn.service" do
   source "unicorn.service.erb"
   owner "root"
@@ -91,6 +95,26 @@ end
 
 link "/etc/systemd/system/multi-user.target.wants/unicorn.service" do
   to "/lib/systemd/system/unicorn.service"
+  owner "root"
+  group "root"
+  action :nothing
+end
+
+template "/lib/systemd/system/chromium-browser.service" do
+  source "chromium-browser.service.erb"
+  owner "root"
+  group "root"
+  mode 0644
+  variables(
+      app_root: app_dir.join("current").to_s,
+      original_user: recipe.original_user
+  )
+  notifies :create, "link[/etc/systemd/system/multi-user.target.wants/chromium-browser.service]", :immediately
+  action :create
+end
+
+link "/etc/systemd/system/multi-user.target.wants/chromium-browser.service" do
+  to "/lib/systemd/system/chromium-browser.service"
   owner "root"
   group "root"
   action :nothing

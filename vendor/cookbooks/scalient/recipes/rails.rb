@@ -263,6 +263,22 @@ if google_analytics_id = percolator.find("analytics-google", :hostname, hostname
   end
 end
 
+if elasticsearch_info = percolator.find("elasticsearch", :hostname, hostname)["elasticsearch"]
+  template app_dir.join("shared/config/elasticsearch.yml").to_s do
+    source "elasticsearch.yml.erb"
+    owner recipe.original_user
+    group recipe.original_group
+    mode 0644
+    variables(
+        url: elasticsearch_info["url"],
+        cloud_id: elasticsearch_info["cloud_id"],
+        user: elasticsearch_info["user"],
+        password: elasticsearch_info["password"]
+    )
+    action :create
+  end
+end
+
 template app_dir.join("shared", "config", "secrets.yml").to_s do
   source "secrets.yml.erb"
   owner recipe.original_user

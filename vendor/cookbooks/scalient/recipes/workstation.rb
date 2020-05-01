@@ -82,6 +82,24 @@ if !workstation_info.nil?
     end
   end
 
+  generate_config_templates("elasticsearch", work_dir) do |entity, config_dir|
+    if elasticsearch_info = entity["elasticsearch"]
+      template config_dir.join("elasticsearch.yml").to_s do
+        source "elasticsearch.yml.erb"
+        owner recipe.original_user
+        group recipe.original_group
+        mode 0644
+        variables(
+            url: elasticsearch_info["url"],
+            cloud_id: elasticsearch_info["cloud_id"],
+            user: elasticsearch_info["user"],
+            password: elasticsearch_info["password"]
+        )
+        action :create
+      end
+    end
+  end
+
   generate_config_templates("keys-aws", work_dir) do |entity, config_dir|
     template config_dir.join("aws.yml").to_s do
       source "aws.yml.erb"

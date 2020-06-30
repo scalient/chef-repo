@@ -12,3 +12,6 @@
 
 default_url_options:
   :host: <%= @hostname.dump %>
+  <% if @port %>
+  :port: <%= @port %>
+  <% end %>

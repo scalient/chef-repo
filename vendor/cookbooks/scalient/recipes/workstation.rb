@@ -37,7 +37,7 @@ if !workstation_info.nil?
       owner recipe.original_user
       group recipe.original_group
       mode 0644
-      variables(hostname: "localhost")
+      variables(hostname: "localhost", port: 3000)
       action :create
     end
   end

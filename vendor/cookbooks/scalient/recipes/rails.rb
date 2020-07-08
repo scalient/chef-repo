@@ -271,6 +271,7 @@ if elasticsearch_info = percolator.find("elasticsearch", :hostname, hostname)["e
     mode 0644
     variables(
         url: elasticsearch_info["url"],
+        kibana_url: elasticsearch_info["kibana_url"],
         cloud_id: elasticsearch_info["cloud_id"],
         user: elasticsearch_info["user"],
         password: elasticsearch_info["password"]

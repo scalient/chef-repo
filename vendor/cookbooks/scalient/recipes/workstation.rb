@@ -91,6 +91,7 @@ if !workstation_info.nil?
         mode 0644
         variables(
             url: elasticsearch_info["url"],
+            kibana_url: elasticsearch_info["kibana_url"],
             cloud_id: elasticsearch_info["cloud_id"],
             user: elasticsearch_info["user"],
             password: elasticsearch_info["password"]

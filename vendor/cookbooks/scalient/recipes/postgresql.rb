@@ -156,7 +156,7 @@ EOF
 end
 
 # Is there SSL information for this hostname? If so, we need to do more work.
-if ssl_info = percolator.find("certificates", :hostname, hostname)&.dig("ssl", domain_name)
+if ssl_info = percolator.find("certificates", :hostname, hostname)&.[]("ssl", domain_name)
   file postgresql_data_dir.join("server.crt").to_s do
     owner "postgres"
     group "postgres"

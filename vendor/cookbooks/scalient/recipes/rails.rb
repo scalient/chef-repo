@@ -177,7 +177,7 @@ rescue Fog::AWS::ELB::NotFound
   load_balancer_meta = {}
 end
 
-domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)&.dig("ssl") || {}
+domain_name_ssl_infos = percolator.find("certificates", :hostname, hostname)&.[]("ssl") || {}
 ssl_dir = Pathname.new("/etc/ssl/private")
 
 # Is there SSL information for this hostname? If so, we need to do more work.
@@ -225,7 +225,7 @@ template app_dir.join("shared", "config", "action_mailer.yml").to_s do
   action :create
 end
 
-if airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)&.dig("airbrake")
+if airbrake_info = percolator.find("monitoring-airbrake", :hostname, hostname)&.[]("airbrake")
   template app_dir.join("shared", "config", "airbrake.yml").to_s do
     source "airbrake.yml.erb"
     owner recipe.original_user
@@ -252,7 +252,7 @@ template app_dir.join("shared", "config", "aws.yml").to_s do
   action :create
 end
 
-if google_analytics_id = percolator.find("analytics-google", :hostname, hostname)&.dig("google_analytics_id")
+if google_analytics_id = percolator.find("analytics-google", :hostname, hostname)&.[]("google_analytics_id")
   template app_dir.join("shared", "config", "google_analytics.yml").to_s do
     source "google_analytics.yml.erb"
     owner recipe.original_user
@@ -263,7 +263,7 @@ if google_analytics_id = percolator.find("analytics-google", :hostname, hostname
   end
 end
 
-if elasticsearch_info = percolator.find("elasticsearch", :hostname, hostname)["elasticsearch"]
+if elasticsearch_info = percolator.find("elasticsearch", :hostname, hostname)&.[]("elasticsearch")
   template app_dir.join("shared/config/elasticsearch.yml").to_s do
     source "elasticsearch.yml.erb"
     owner recipe.original_user

@@ -65,7 +65,7 @@ service "nginx" do
 end
 
 apt_repository "nodesource" do
-  uri "https://deb.nodesource.com/node_13.x"
+  uri "https://deb.nodesource.com/node_15.x"
   components ["main"]
   key "68576280"
   action :add
@@ -138,10 +138,6 @@ end
     mode 0755
     action :create
   end
-end
-
-npm_package "bower" do
-  action :install
 end
 
 npm_package "yarn" do

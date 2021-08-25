@@ -1,0 +1,19 @@
+---
+
+#  ____________________________________
+# / This file is managed by Chef. Your \
+# \ changes will be overwritten.       /
+#  ------------------------------------
+#         \   ^__^
+#          \  (oo)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+
+metricbeat.modules:
+  - module: aws
+    period: 12h
+    metricsets:
+      - billing
+    access_key_id: <%= @access_key.dump %>
+    secret_access_key: <%= @secret_key.dump %>

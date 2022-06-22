@@ -65,7 +65,7 @@ service "nginx" do
 end
 
 apt_repository "nodesource" do
-  uri "https://deb.nodesource.com/node_15.x"
+  uri "https://deb.nodesource.com/node_16.x"
   components ["main"]
   key "68576280"
   action :add
